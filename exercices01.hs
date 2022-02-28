@@ -63,9 +63,9 @@ et p q = p && q
 {-
 : Exercice 5
 -}
-truthTableOr = [(x, y, z) | let r = [False, True], x <- r, y <- r, z <- [ou x y]]
+truthTableOr = [(x, y, ou x y) | let r = [False, True], x <- r, y <- r]
 
-truthTableAnd = [(x, y, z) | let r = [False, True], x <- r, y <- r, z <- [et x y]]
+truthTableAnd = [(x, y, et x y) | let r = [False, True], x <- r, y <- r]
 
 {-
 : Exercice 6
@@ -141,7 +141,7 @@ myConcatList = myList ++ [2, 3]
 : Exercice 11
 -}
 
-slice s i j = [xs | x <- [i .. j], xs <- [s !! x]]
+slice s i j = [s !! x | x <- [i .. j]]
 
 slice' xs i j =
   case xs of

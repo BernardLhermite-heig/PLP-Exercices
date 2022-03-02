@@ -259,6 +259,8 @@ secToHMS s =
     |  |
     |__|
      a
+
+    oui c'est du 2D mais le concept est là.
 -}
 equerre a b c = rect1 + rect2
   where

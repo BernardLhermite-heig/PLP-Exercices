@@ -1,5 +1,4 @@
 import Data.Char
-import Data.Function (fix)
 import Prelude hiding (fmap)
 
 {-

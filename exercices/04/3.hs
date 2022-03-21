@@ -23,10 +23,11 @@ remove x (Cons h hs)
   | otherwise = Cons h (remove x hs)
 
 fromList :: [a] -> Liste a
-fromList = foldr f Nil
-  where
-    f x Nil = Cons x Nil
-    f x (Cons h hs) = Cons x $ Cons h hs
+fromList = foldr Cons Nil
+
+-- where
+--   f x Nil = Cons x Nil
+--   f x (Cons h hs) = Cons x $ Cons h hs
 
 recherche :: (a -> Bool) -> Liste a -> Liste a
 recherche _ Nil = Nil

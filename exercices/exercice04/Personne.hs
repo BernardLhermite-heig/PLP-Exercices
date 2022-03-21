@@ -1,5 +1,3 @@
--- Exo 1
-
 module Personne where
 
 import Data.Char (toUpper)

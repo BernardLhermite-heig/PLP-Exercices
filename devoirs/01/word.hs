@@ -10,7 +10,7 @@ main =
       do
         contents <- mapM readFile args
         let stats = zipWith (\f (w, l, b) -> (f, w, l, b)) args (map count contents)
-        let total = foldl (\(f, w, l, b) (_, w', l', b') -> (f, w + w', l + l', b + b')) ("total", 0, 0, 0) stats
+            total = foldl (\(f, w, l, b) (_, w', l', b') -> (f, w + w', l + l', b + b')) ("total", 0, 0, 0) stats
         putStrLn (printf "%-10s %5s %5s %5s" "file" "word" "line" "byte")
         mapM_ (putStrLn . printStats) stats
         putStrLn $ printStats total

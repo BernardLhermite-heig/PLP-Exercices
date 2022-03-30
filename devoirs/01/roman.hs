@@ -1,6 +1,20 @@
 module Roman (toRoman, fromRoman) where
 
-romanMap = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+romanMap =
+  [ (1000, "M"),
+    (900, "CM"),
+    (500, "D"),
+    (400, "CD"),
+    (100, "C"),
+    (90, "XC"),
+    (50, "L"),
+    (40, "XL"),
+    (10, "X"),
+    (9, "IX"),
+    (5, "V"),
+    (4, "IV"),
+    (1, "I")
+  ]
 
 value 'I' = 1
 value 'V' = 5
@@ -12,12 +26,12 @@ value 'M' = 1000
 
 toRoman :: Int -> Maybe String
 toRoman x
-  | x > 0 && x <= 3999 = Just $ snd $ foldl f (x, "") romanMap
-  | otherwise = Nothing
+  | x < 0 || x >= 4000 = Nothing
+  | otherwise = Just $ snd $ foldl f (x, "") romanMap
   where
-    f (n, str) (chiffre, lettre) = (l, str ++ concat (replicate k lettre))
+    f (x, rom) (n, symb) = (rem, rom ++ concat (replicate k symb))
       where
-        (k, l) = divMod n chiffre
+        (k, rem) = divMod x n
 
 fromRoman :: String -> Maybe Int
 fromRoman str = if Just str == s then Just n else Nothing

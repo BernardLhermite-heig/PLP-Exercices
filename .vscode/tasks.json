@@ -1,7 +1,5 @@
-
 {
   // Automatically created by phoityne-vscode extension.
-
   "version": "2.0.0",
   "presentation": {
     "reveal": "always",
@@ -45,6 +43,25 @@
       "type": "shell",
       "label": "haskell watch",
       "command": "stack build --test --no-run-tests --file-watch"
+    },
+    {
+      "label": "ghci",
+      "type": "shell",
+      "command": "",
+      "options": {
+        "shell": {
+          "executable": "ghci.exe",
+          "args": []
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "mongroupe"
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
     }
   ]
 }

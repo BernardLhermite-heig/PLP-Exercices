@@ -9,14 +9,25 @@ main =
     unless (null args) $
       do
         contents <- mapM readFile args
-        let stats = zipWith (\f (w, l, b) -> (f, w, l, b)) args (map count contents)
-            total = foldl (\(f, w, l, b) (_, w', l', b') -> (f, w + w', l + l', b + b')) ("total", 0, 0, 0) stats
-        putStrLn (printf "%-10s %5s %5s %5s" "file" "word" "line" "byte")
-        mapM_ (putStrLn . printStats) stats
-        putStrLn $ printStats total
+        let files = zip args contents
+            stats = foldr getStats (("total", 0, 0, 0), []) files
 
-printStats :: (String, Int, Int, Int) -> String
-printStats (file, words, lines, bytes) = printf "%-10s %5d %5d %5d" file words lines bytes
+        printStats stats
+
+printStats :: ((String, Int, Int, Int), [(String, Int, Int, Int)]) -> IO ()
+printStats (total, xs) = do
+  printf "%-10s %5s %5s %5s\n" "file" "word" "line" "byte"
+  mapM_ format xs
+  format total
+  where
+    format (f, w, l, b) = printf "%-10s %5d %5d %5d\n" f w l b
+
+getStats :: (String, String) -> ((String, Int, Int, Int), [(String, Int, Int, Int)]) -> ((String, Int, Int, Int), [(String, Int, Int, Int)])
+getStats (file, content) ((t, tw, tl, tb), xs) = (total, stats : xs)
+  where
+    (w, l, b) = count content
+    stats = (file, w, l, b)
+    total = (t, tw + w, tl + l, tb + b)
 
 count :: String -> (Int, Int, Int)
 count content = (w, l, bytes)

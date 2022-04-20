@@ -11,7 +11,9 @@ data Side = LeftBank | RightBank
 
 data Boat = Boat Character | EmptyBoat
 
-data Game = Game Side Boat [Character] [Character]
+data State = State Side Boat [Character] [Character]
+
+data Move = ValidMove State | InvalidMove String
 
 river :: String
 river = replicate 40 '~'
@@ -23,8 +25,8 @@ instance Show Boat where
   show (Boat passenger) = "Barque: " ++ show Farmer ++ ", " ++ show passenger
   show EmptyBoat = "Barque: " ++ show Farmer
 
-instance Show Game where
-  show (Game side boat left right) = showLeft ++ showRiver ++ showRight
+instance Show State where
+  show (State side boat left right) = showLeft ++ showRiver ++ showRight
     where
       showRiver = case side of
         LeftBank -> show boat ++ "\n" ++ river ++ "\n"
@@ -36,10 +38,9 @@ main :: IO ()
 main =
   do
     help
-    let game = initGame
-    putStrLn "Etat initial du jeu:"
-    print game
-    gameLoop game
+    let initialState = initGame
+    print initialState
+    gameLoop initialState
 
 help :: IO ()
 help = do
@@ -51,80 +52,93 @@ help = do
   putStrLn ":q quitter le jeu"
   putStrLn ":h afficher l'aide"
 
-initGame :: Game
-initGame = Game LeftBank EmptyBoat [Wolf, Goat, Cabbage] []
-
-reset :: IO ()
-reset = gameLoop initGame
-
-quit :: IO ()
+quit :: IO a
 quit = exitSuccess
 
-gameLoop :: Game -> IO ()
-gameLoop game = do
-  cmd <- getLine
-  parseCmd cmd
-  gameLoop game
+initGame :: State
+initGame = State LeftBank EmptyBoat [Wolf, Goat, Cabbage] []
+
+gameLoop :: State -> IO ()
+gameLoop state
+  | hasWon state = do
+    putStrLn "Vous avez gagné!"
+    askReplay
+  | otherwise = do
+    cmd <- getLine
+    nextState <- parseCmd cmd
+    gameLoop nextState
   where
     parseCmd (':' : cmd : rest) =
       case cmd of
-        'p' -> print game
+        'p' -> print state >> return state
         'l' -> case rest of
           (' ' : arg) ->
             case parseArg arg of
               Just passenger ->
-                case loadPassenger game passenger of
-                  Just nextGame -> gameLoop nextGame
-                  Nothing -> putStrLn "Impossible de charger ce passager"
-              Nothing -> putStrLn "Passager inconnu"
-          _ -> putStrLn unknownCommand
-        'u' -> case unloadPassenger game of
-          Just nextGame -> gameLoop nextGame
-          Nothing -> putStrLn "Barque vide"
-        'm' -> case moveBoat game of
-          Just nextGame -> gameLoop nextGame
-          Nothing -> putStrLn "Impossible de déplacer la barque"
-        'r' -> reset
+                case loadPassenger state passenger of
+                  ValidMove nextMove -> return nextMove
+                  InvalidMove msg -> putStrLn msg >> return state
+              Nothing -> putStrLn "Passager inconnu" >> return state
+          _ -> putStrLn "Passager manquant" >> return state
+        'u' -> case unloadPassenger state of
+          ValidMove nextMove -> return nextMove
+          InvalidMove msg -> putStrLn msg >> return state
+        'm' -> case moveBoat state of
+          ValidMove nextMove -> return nextMove
+          InvalidMove msg -> putStrLn msg >> return state
+        'r' -> return initGame
         'q' -> quit
-        'h' -> help
-        _ -> putStrLn unknownCommand
-    parseCmd _ = putStrLn unknownCommand
+        'h' -> help >> return state
+        _ -> putStrLn unknownCommand >> return state
+    parseCmd _ = putStrLn unknownCommand >> return state
+    askReplay = do
+      putStrLn "Voulez-vous rejouer? (y/n)"
+      answer <- getLine
+      case answer of
+        "y" -> main
+        "n" -> quit
+        _ -> do
+          putStrLn "Réponse invalide"
+          askReplay
 
-isMoveValid :: Game -> Bool
-isMoveValid (Game side _ left right) =
-  not (Wolf `elem` bank && Goat `elem` bank) && not (Goat `elem` bank && Cabbage `elem` bank)
+validateMove :: State -> Move
+validateMove state@(State side _ left right)
+  | hasWolf && hasGoat = InvalidMove "Le loup ne peut pas être laissé seul avec la chèvre"
+  | hasGoat && hasCabbage = InvalidMove "La chèvre ne peut pas être laissée seule avec les choux"
+  | otherwise = ValidMove state
   where
     bank = case side of
       LeftBank -> right
       RightBank -> left
+    hasWolf = Wolf `elem` bank
+    hasGoat = Goat `elem` bank
+    hasCabbage = Cabbage `elem` bank
 
-moveBoat :: Game -> Maybe Game
-moveBoat (Game side boat left right)
-  | isMoveValid nextMove = Just nextMove
-  | otherwise = Nothing
+moveBoat :: State -> Move
+moveBoat (State side boat left right) = validateMove nextMove
   where
     oppositeSide = case side of
       LeftBank -> RightBank
       RightBank -> LeftBank
-    nextMove = Game oppositeSide boat left right
+    nextMove = State oppositeSide boat left right
 
-loadPassenger :: Game -> Character -> Maybe Game
-loadPassenger (Game side boat left right) passenger =
+loadPassenger :: State -> Character -> Move
+loadPassenger (State side boat left right) passenger =
   case boat of
-    Boat _ -> Nothing
+    Boat _ -> InvalidMove "La barque contient déjà un passager"
     EmptyBoat
-      | isValid -> Just $ Game side (Boat passenger) newLeft newRight
-      | otherwise -> Nothing
+      | isValid -> ValidMove $ State side (Boat passenger) newLeft newRight
+      | otherwise -> InvalidMove "Ce passager se trouve sur l'autre rive"
       where
         (isValid, newLeft, newRight) = case side of
           LeftBank -> (passenger `elem` left, delete passenger left, right)
           RightBank -> (passenger `elem` right, left, delete passenger right)
 
-unloadPassenger :: Game -> Maybe Game
-unloadPassenger (Game side boat left right) =
+unloadPassenger :: State -> Move
+unloadPassenger (State side boat left right) =
   case boat of
-    EmptyBoat -> Nothing
-    Boat passenger -> Just $ Game side EmptyBoat newLeft newRight
+    EmptyBoat -> InvalidMove "La barque est vide"
+    Boat passenger -> ValidMove $ State side EmptyBoat newLeft newRight
       where
         (newLeft, newRight) = case side of
           LeftBank -> (passenger : left, right)
@@ -137,3 +151,7 @@ parseArg arg =
     "goat" -> Just Goat
     "cabbage" -> Just Cabbage
     _ -> Nothing
+
+hasWon :: State -> Bool
+hasWon (State RightBank EmptyBoat left right) = length right == 3
+hasWon _ = False

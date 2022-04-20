@@ -9,39 +9,28 @@ data Character = Farmer | Wolf | Goat | Cabbage
 
 data Side = LeftBank | RightBank
 
-data Boat = Boat Side Character | EmptyBoat Side
+data Boat = Boat Character | EmptyBoat
 
-data Game = Game Boat [Character] [Character]
+data Game = Game Side Boat [Character] [Character]
 
 river :: String
-river = replicate 30 '='
+river = replicate 40 '~'
 
 unknownCommand :: String
 unknownCommand = "Commande inconnue"
 
 instance Show Boat where
-  show (Boat side passenger) =
-    case side of
-      LeftBank -> showBoat ++ "\n" ++ river ++ "\n"
-      RightBank -> "\n" ++ river ++ "\n" ++ showBoat
-    where
-      showBoat = "Barque: " ++ show Farmer ++ ", " ++ show passenger
-  show (EmptyBoat side) =
-    case side of
-      LeftBank -> showBoat ++ "\n" ++ river ++ "\n"
-      RightBank -> "\n" ++ river ++ "\n" ++ showBoat
-    where
-      showBoat = "Barque: " ++ show Farmer
+  show (Boat passenger) = "Barque: " ++ show Farmer ++ ", " ++ show passenger
+  show EmptyBoat = "Barque: " ++ show Farmer
 
 instance Show Game where
-  show (Game boat left right) =
-    "Gauche: "
-      ++ show left
-      ++ "\n"
-      ++ show boat
-      ++ "\n"
-      ++ "Droite: "
-      ++ show right
+  show (Game side boat left right) = showLeft ++ showRiver ++ showRight
+    where
+      showRiver = case side of
+        LeftBank -> show boat ++ "\n" ++ river ++ "\n"
+        RightBank -> "\n" ++ river ++ "\n" ++ show boat
+      showLeft = "Gauche: " ++ show left ++ "\n"
+      showRight = "\n" ++ "Droite: " ++ show right
 
 main :: IO ()
 main =
@@ -63,7 +52,7 @@ help = do
   putStrLn ":h afficher l'aide"
 
 initGame :: Game
-initGame = Game (EmptyBoat LeftBank) [Wolf, Goat, Cabbage] []
+initGame = Game LeftBank EmptyBoat [Wolf, Goat, Cabbage] []
 
 reset :: IO ()
 reset = gameLoop initGame
@@ -102,13 +91,7 @@ gameLoop game = do
     parseCmd _ = putStrLn unknownCommand
 
 isMoveValid :: Game -> Bool
-isMoveValid (Game (EmptyBoat side) left right) =
-  not (Wolf `elem` bank && Goat `elem` bank) && not (Goat `elem` bank && Cabbage `elem` bank)
-  where
-    bank = case side of
-      LeftBank -> right
-      RightBank -> left
-isMoveValid (Game (Boat side _) left right) =
+isMoveValid (Game side _ left right) =
   not (Wolf `elem` bank && Goat `elem` bank) && not (Goat `elem` bank && Cabbage `elem` bank)
   where
     bank = case side of
@@ -116,41 +99,36 @@ isMoveValid (Game (Boat side _) left right) =
       RightBank -> left
 
 moveBoat :: Game -> Maybe Game
-moveBoat (Game boat left right)
-  | canMove = case boat of
-    Boat side passenger -> Just $ Game (Boat (oppositeSide side) passenger) left right
-    EmptyBoat side -> Just $ Game (EmptyBoat (oppositeSide side)) left right
+moveBoat (Game side boat left right)
+  | isMoveValid nextMove = Just nextMove
   | otherwise = Nothing
   where
-    oppositeSide LeftBank = RightBank
-    oppositeSide RightBank = LeftBank
-    canMove = True
+    oppositeSide = case side of
+      LeftBank -> RightBank
+      RightBank -> LeftBank
+    nextMove = Game oppositeSide boat left right
 
 loadPassenger :: Game -> Character -> Maybe Game
-loadPassenger (Game boat left right) passenger =
+loadPassenger (Game side boat left right) passenger =
   case boat of
-    EmptyBoat side
-      | isValid -> Just $ Game (Boat side passenger) newLeftBank newRightBank
+    Boat _ -> Nothing
+    EmptyBoat
+      | isValid -> Just $ Game side (Boat passenger) newLeft newRight
       | otherwise -> Nothing
-    Boat _ _ -> Nothing
-  where
-    (EmptyBoat side) = boat
-    isValid = case side of
-      LeftBank -> passenger `elem` left
-      RightBank -> passenger `elem` right
-    newLeftBank = case side of
-      LeftBank -> delete passenger left
-      RightBank -> left
-    newRightBank = case side of
-      LeftBank -> right
-      RightBank -> delete passenger right
+      where
+        (isValid, newLeft, newRight) = case side of
+          LeftBank -> (passenger `elem` left, delete passenger left, right)
+          RightBank -> (passenger `elem` right, left, delete passenger right)
 
 unloadPassenger :: Game -> Maybe Game
-unloadPassenger (Game boat left right) =
+unloadPassenger (Game side boat left right) =
   case boat of
-    Boat LeftBank passenger -> Just $ Game (EmptyBoat LeftBank) (passenger : left) right
-    Boat RightBank passenger -> Just $ Game (EmptyBoat RightBank) left (passenger : right)
-    EmptyBoat _ -> Nothing
+    EmptyBoat -> Nothing
+    Boat passenger -> Just $ Game side EmptyBoat newLeft newRight
+      where
+        (newLeft, newRight) = case side of
+          LeftBank -> (passenger : left, right)
+          RightBank -> (left, passenger : right)
 
 parseArg :: String -> Maybe Character
 parseArg arg =

@@ -66,9 +66,7 @@ initGame = State LeftBank EmptyBoat [Wolf, Goat, Cabbage] []
 
 gameLoop :: State -> IO ()
 gameLoop state
-  | hasWon state = do
-    putStrLn "Vous avez gagné!"
-    askReplay
+  | hasWon state = putStrLn "Vous avez gagné!" >> askReplay
   | otherwise = do
     putStr "> "
     hFlush stdout
@@ -99,15 +97,15 @@ gameLoop state
         'h' -> help >> return state
         _ -> putStrLn unknownCommand >> return state
     parseCmd _ = putStrLn unknownCommand >> return state
-    askReplay = do
-      putStrLn "Voulez-vous rejouer? (y/n)"
-      answer <- getLine
-      case answer of
-        "y" -> main
-        "n" -> quit
-        _ -> do
-          putStrLn "Réponse invalide"
-          askReplay
+
+askReplay :: IO ()
+askReplay = do
+  putStrLn "Voulez-vous rejouer? (y/n)"
+  answer <- getLine
+  case answer of
+    "y" -> main
+    "n" -> quit
+    _ -> putStrLn "Réponse invalide" >> askReplay
 
 validateMove :: State -> Move
 validateMove state@(State side _ left right)

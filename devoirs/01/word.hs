@@ -32,16 +32,16 @@ printStats (total, xs) = do
     format (f, w, l, b) = printf "%-10s %5d %5d %5d\n" f w l b
 
 getStats :: (String, String) -> ((String, Int, Int, Int), [(String, Int, Int, Int)]) -> ((String, Int, Int, Int), [(String, Int, Int, Int)])
-getStats (file, content) ((t, tw, tl, tb), xs) = (total, stats : xs)
+getStats (file, content) ((totalStr, totalWords, totalLines, totalBytes), stats) = (total, stat : stats)
   where
-    (w, l, b) = count content
-    stats = (file, w, l, b)
-    total = (t, tw + w, tl + l, tb + b)
+    (nWords, nLines, nBytes) = count content
+    stat = (file, nWords, nLines, nBytes)
+    total = (totalStr, totalWords + nWords, totalLines + nLines, totalBytes + nBytes)
 
 count :: String -> (Int, Int, Int)
-count content = (w, l, bytes)
+count content = (nWords, nLines, nBytes)
   where
     lines' = lines content
-    bytes = length content
+    nBytes = length content
     countWords str = length $ words str
-    (w, l) = foldl (\(words, lines) line -> (countWords line + words, succ lines)) (0, 0) lines'
+    (nWords, nLines) = foldl (\(words, lines) line -> (countWords line + words, succ lines)) (0, 0) lines'

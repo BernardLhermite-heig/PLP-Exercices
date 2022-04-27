@@ -1,3 +1,8 @@
+{-
+: Auteur: Stéphane Marengo
+: Date: 27.04.2022
+-}
+
 import Control.Monad
 import System.Environment
 import Text.Printf (printf)

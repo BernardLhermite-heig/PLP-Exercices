@@ -1,3 +1,8 @@
+{-
+: Auteur: Stéphane Marengo
+: Date: 27.04.2022
+-}
+
 module Roman (toRoman, fromRoman) where
 
 romanMap =

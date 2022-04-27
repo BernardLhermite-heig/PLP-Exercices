@@ -1,3 +1,8 @@
+{-
+: Auteur: Stéphane Marengo
+: Date: 27.04.2022
+-}
+
 import Control.Monad
 import Data.Char
 import Data.List
@@ -29,7 +34,7 @@ spanEnd p (x : xs) =
   where
     (ys, zs) = spanEnd p xs
 
-lexer :: [Char] -> [Token]
+lexer :: String -> [Token]
 lexer [] = []
 lexer (c : cs) =
   case c of

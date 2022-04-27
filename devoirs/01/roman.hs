@@ -5,6 +5,10 @@
 
 module Roman (toRoman, fromRoman) where
 
+import Data.List
+import Data.Maybe
+
+romanMap :: [(Int, [Char])]
 romanMap =
   [ (1000, "M"),
     (900, "CM"),
@@ -21,33 +25,43 @@ romanMap =
     (1, "I")
   ]
 
-value 'I' = 1
-value 'V' = 5
-value 'X' = 10
-value 'L' = 50
-value 'C' = 100
-value 'D' = 500
-value 'M' = 1000
+toValue :: Char -> Int
+toValue c
+  | isJust f = fst $ fromJust f
+  | otherwise = 0
+  where
+    f = find ((== [c]) . snd) romanMap
+
+toValue' 'I' = 1
+toValue' 'V' = 5
+toValue' 'X' = 10
+toValue' 'L' = 50
+toValue' 'C' = 100
+toValue' 'D' = 500
+toValue' 'M' = 1000
 
 toRoman :: Int -> Maybe String
 toRoman x
   | x < 0 || x >= 4000 = Nothing
-  | otherwise = Just $ snd $ foldl f (x, "") romanMap
+  | otherwise = Just $ snd $ foldl toRoman' (x, "") romanMap
   where
-    f (x, rom) (n, symb) = (rem, rom ++ concat (replicate k symb))
+    toRoman' (x, str) (value, symbol) = (rem, roman)
       where
-        (k, rem) = divMod x n
+        roman = str ++ concat (replicate quot symbol)
+        (quot, rem) = divMod x value
 
 fromRoman :: String -> Maybe Int
-fromRoman str = if Just str == s then Just n else Nothing
+fromRoman str
+  | Just str == validStr = Just n
+  | otherwise = Nothing
   where
     n = convert str
-    s = toRoman n
+    validStr = toRoman n
     convert [] = 0
-    convert [s] = value s
-    convert (s1 : s2 : str)
+    convert [c] = toValue c
+    convert (c1 : c2 : str)
       | n1 < n2 = n2 - n1 + convert str
-      | otherwise = n1 + convert (s2 : str)
+      | otherwise = n1 + convert (c2 : str)
       where
-        n1 = value s1
-        n2 = value s2
+        n1 = toValue c1
+        n2 = toValue c2

@@ -41,7 +41,7 @@ getStats (file, content) ((t, tw, tl, tb), xs) = (total, stats : xs)
 count :: String -> (Int, Int, Int)
 count content = (w, l, bytes)
   where
-    str = lines content
+    lines' = lines content
     bytes = length content
     countWords str = length $ words str
-    (w, l) = foldl (\(words, lines) line -> (countWords line + words, succ lines)) (0, 0) str
+    (w, l) = foldl (\(words, lines) line -> (countWords line + words, succ lines)) (0, 0) lines'

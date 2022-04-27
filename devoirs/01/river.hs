@@ -145,14 +145,14 @@ unloadPassenger move@(State side boat left right) =
 
 parsePassenger :: String -> Maybe Character
 parsePassenger arg
-  | match str "wolf" = Just Wolf
-  | match str "goat" = Just Goat
-  | match str "cabbage" = Just Cabbage
+  | match "wolf" = Just Wolf
+  | match "goat" = Just Goat
+  | match "cabbage" = Just Cabbage
   | otherwise = Nothing
   where
     str = map toLower arg
-    match xs name@(n : _) = xs == name || xs == [n]
-    match _ _ = False
+    match name@(n : _) = str == name || str == [n]
+    match _ = False
 
 hasWon :: State -> Bool
 hasWon (State RightBank EmptyBoat left right) = length right == 3

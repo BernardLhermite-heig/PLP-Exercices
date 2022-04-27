@@ -7,12 +7,16 @@ import Control.Monad
 import System.Environment
 import Text.Printf (printf)
 
+usage :: IO ()
+usage = putStrLn "usage: word <file> [<file> ...]"
+
 main :: IO ()
 main =
   do
     args <- getArgs
-    unless (null args) $
-      do
+    if null args
+      then usage
+      else do
         contents <- mapM readFile args
         let files = zip args contents
             stats = foldr getStats (("total", 0, 0, 0), []) files

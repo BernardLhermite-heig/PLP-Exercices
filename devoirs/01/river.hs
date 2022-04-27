@@ -24,9 +24,6 @@ data Move = ValidMove State | InvalidMove State String
 river :: String
 river = replicate 40 '~'
 
-unknownCommand :: String
-unknownCommand = "Commande inconnue"
-
 instance Show Boat where
   show (Boat passenger) = show EmptyBoat ++ ", " ++ show passenger
   show EmptyBoat = "Barque: Farmer"
@@ -51,7 +48,7 @@ main =
 help :: IO ()
 help = do
   putStrLn ":p afficher l'état du jeu"
-  putStrLn ":l <passenger> charger la barque avec un passager (ex: :l wolf)"
+  putStrLn ":l <passenger> charger la barque avec un passager (ex: :l wolf ou :l w)"
   putStrLn ":u décharger la barque"
   putStrLn ":m déplacer la barque"
   putStrLn ":r réinitialiser le jeu"
@@ -72,17 +69,16 @@ gameLoop move@(ValidMove state)
     putStr "> "
     hFlush stdout
     cmd <- getLine
-    case parseCmd (map toLower cmd) of
+    case parseCmd cmd of
       Left move -> gameLoop move
       Right msg -> msg >> gameLoop (ValidMove state)
   where
-    parseCmd :: String -> Either Move (IO ())
     parseCmd (':' : cmd : rest) =
       case cmd of
         'p' -> Right $ print state
         'l' -> case rest of
           (' ' : arg) -> Left $
-            case parseArg arg of
+            case parsePassenger arg of
               Just passenger -> loadPassenger state passenger
               Nothing -> InvalidMove state "Passager inconnu"
           _ -> Left $ InvalidMove state "Passager manquant"
@@ -93,6 +89,7 @@ gameLoop move@(ValidMove state)
         'h' -> Right help
         _ -> Left $ InvalidMove state unknownCommand
     parseCmd _ = Left $ InvalidMove state unknownCommand
+    unknownCommand = "Commande inconnue"
 
 askReplay :: IO ()
 askReplay = do
@@ -146,13 +143,16 @@ unloadPassenger move@(State side boat left right) =
           LeftBank -> (passenger : left, right)
           RightBank -> (left, passenger : right)
 
-parseArg :: String -> Maybe Character
-parseArg arg =
-  case arg of
-    "wolf" -> Just Wolf
-    "goat" -> Just Goat
-    "cabbage" -> Just Cabbage
-    _ -> Nothing
+parsePassenger :: String -> Maybe Character
+parsePassenger arg
+  | match str "wolf" = Just Wolf
+  | match str "goat" = Just Goat
+  | match str "cabbage" = Just Cabbage
+  | otherwise = Nothing
+  where
+    str = map toLower arg
+    match xs name@(n : _) = xs == name || xs == [n]
+    match _ _ = False
 
 hasWon :: State -> Bool
 hasWon (State RightBank EmptyBoat left right) = length right == 3

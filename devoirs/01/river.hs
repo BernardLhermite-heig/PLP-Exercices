@@ -8,6 +8,7 @@ import Data.Char
 import Data.List
 import System.Environment
 import System.Exit (exitSuccess)
+import System.IO
 
 data Character = Farmer | Wolf | Goat | Cabbage
   deriving (Show, Eq)
@@ -69,6 +70,8 @@ gameLoop state
     putStrLn "Vous avez gagné!"
     askReplay
   | otherwise = do
+    putStr "> "
+    hFlush stdout
     cmd <- getLine
     nextState <- parseCmd cmd
     gameLoop nextState

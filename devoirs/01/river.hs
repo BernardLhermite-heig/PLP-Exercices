@@ -26,7 +26,7 @@ river = replicate 40 '~'
 
 instance Show Boat where
   show (Boat passenger) = show EmptyBoat ++ ", " ++ show passenger
-  show EmptyBoat = "Barque: Farmer"
+  show EmptyBoat = "Boat: Farmer"
 
 instance Show State where
   show (State side boat left right) = showLeft ++ showRiver ++ showRight
@@ -34,8 +34,8 @@ instance Show State where
       showRiver = case side of
         LeftBank -> show boat ++ "\n" ++ river ++ "\n"
         RightBank -> "\n" ++ river ++ "\n" ++ show boat
-      showLeft = "Gauche: " ++ show left ++ "\n"
-      showRight = "\n" ++ "Droite: " ++ show right
+      showLeft = "Left: " ++ show left ++ "\n"
+      showRight = "\n" ++ "Right: " ++ show right
 
 main :: IO ()
 main =
@@ -47,13 +47,13 @@ main =
 
 help :: IO ()
 help = do
-  putStrLn ":p afficher l'état du jeu"
-  putStrLn ":l <passenger> charger la barque avec un passager (ex: :l wolf ou :l w)"
-  putStrLn ":u décharger la barque"
-  putStrLn ":m déplacer la barque"
-  putStrLn ":r réinitialiser le jeu"
-  putStrLn ":q quitter le jeu"
-  putStrLn ":h afficher l'aide"
+  putStrLn ":p print the current state"
+  putStrLn ":l <passenger> load the boat with the specified passenger (e.g. :l wolf or :l w)"
+  putStrLn ":u unload the boat"
+  putStrLn ":m move the boat to the other side"
+  putStrLn ":r reset the game"
+  putStrLn ":q quit the game"
+  putStrLn ":h print this help"
 
 quit :: IO ()
 quit = exitSuccess
@@ -64,7 +64,7 @@ initGame = ValidMove $ State LeftBank EmptyBoat [Wolf, Goat, Cabbage] []
 gameLoop :: Move -> IO ()
 gameLoop (InvalidMove oldState msg) = putStrLn msg >> gameLoop (ValidMove oldState)
 gameLoop move@(ValidMove state)
-  | hasWon state = putStrLn "Vous avez gagné!" >> askReplay
+  | hasWon state = putStrLn "You won!" >> askReplay
   | otherwise = do
     putStr "> "
     hFlush stdout
@@ -80,8 +80,8 @@ gameLoop move@(ValidMove state)
           (' ' : arg) -> Left $
             case parsePassenger arg of
               Just passenger -> loadPassenger state passenger
-              Nothing -> InvalidMove state "Passager inconnu"
-          _ -> Left $ InvalidMove state "Passager manquant"
+              Nothing -> InvalidMove state "Invalid passenger"
+          _ -> Left $ InvalidMove state "Missing argument <passenger>"
         'u' -> Left $ unloadPassenger state
         'm' -> Left $ moveBoat state
         'r' -> Left initGame
@@ -89,22 +89,22 @@ gameLoop move@(ValidMove state)
         'h' -> Right help
         _ -> Left $ InvalidMove state unknownCommand
     parseCmd _ = Left $ InvalidMove state unknownCommand
-    unknownCommand = "Commande inconnue"
+    unknownCommand = "Unknown command"
 
 askReplay :: IO ()
 askReplay = do
-  putStrLn "Voulez-vous rejouer? (y/n)"
+  putStrLn "Do you want to play again? (y/n)"
   answer <- getLine
   case answer of
     "y" -> main
     "n" -> quit
-    _ -> putStrLn "Réponse invalide" >> askReplay
+    _ -> putStrLn "Invalid answer" >> askReplay
 
-validateMove :: State -> Move
-validateMove move@(State side _ left right)
-  | hasWolf && hasGoat = InvalidMove move "Le loup ne peut pas être laissé seul avec la chèvre"
-  | hasGoat && hasCabbage = InvalidMove move "La chèvre ne peut pas être laissée seule avec les choux"
-  | otherwise = ValidMove move
+validateMove :: State -> State -> Move
+validateMove oldState nextState@(State side _ left right)
+  | hasWolf && hasGoat = InvalidMove oldState "The wolf cannot be left alone with the goat"
+  | hasGoat && hasCabbage = InvalidMove oldState "The goat cannot be left alone with the cabbage"
+  | otherwise = ValidMove nextState
   where
     bank = case side of
       LeftBank -> right
@@ -114,29 +114,29 @@ validateMove move@(State side _ left right)
     hasCabbage = Cabbage `elem` bank
 
 moveBoat :: State -> Move
-moveBoat (State side boat left right) = validateMove nextMove
+moveBoat state@(State side boat left right) = validateMove state nextState
   where
     oppositeSide = case side of
       LeftBank -> RightBank
       RightBank -> LeftBank
-    nextMove = State oppositeSide boat left right
+    nextState = State oppositeSide boat left right
 
 loadPassenger :: State -> Character -> Move
-loadPassenger move@(State side boat left right) passenger =
+loadPassenger state@(State side boat left right) passenger =
   case boat of
-    Boat _ -> InvalidMove move "La barque contient déjà un passager"
+    Boat _ -> InvalidMove state "The boat is already occupied"
     EmptyBoat
       | isValid -> ValidMove $ State side (Boat passenger) newLeft newRight
-      | otherwise -> InvalidMove move "Ce passager se trouve sur l'autre rive"
+      | otherwise -> InvalidMove state "This passenger is on the other side"
       where
         (isValid, newLeft, newRight) = case side of
           LeftBank -> (passenger `elem` left, delete passenger left, right)
           RightBank -> (passenger `elem` right, left, delete passenger right)
 
 unloadPassenger :: State -> Move
-unloadPassenger move@(State side boat left right) =
+unloadPassenger state@(State side boat left right) =
   case boat of
-    EmptyBoat -> InvalidMove move "La barque est vide"
+    EmptyBoat -> InvalidMove state "The boat is empty"
     Boat passenger -> ValidMove $ State side EmptyBoat newLeft newRight
       where
         (newLeft, newRight) = case side of

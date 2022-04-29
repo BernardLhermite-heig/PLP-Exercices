@@ -37,9 +37,9 @@ toValue 'M' = 1000
 toRoman :: Int -> Maybe String
 toRoman x
   | x < 0 || x >= 4000 = Nothing
-  | otherwise = Just $ snd $ foldl toRoman' (x, "") romanMap
+  | otherwise = Just $ snd $ foldl convert (x, "") romanMap
   where
-    toRoman' (x, str) (value, symbol) = (rem, roman)
+    convert (x, str) (value, symbol) = (rem, roman)
       where
         roman = str ++ concat (replicate quot symbol)
         (quot, rem) = divMod x value

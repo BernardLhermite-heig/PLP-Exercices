@@ -1,6 +1,7 @@
 {-
-: Auteur: Stéphane Marengo
-: Date: 27.04.2022
+: Auteur:   Stéphane Marengo
+: Date:     27.04.2022
+: Exercice: Entiers de Peano
 -}
 
 module Peano where

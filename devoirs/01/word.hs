@@ -1,6 +1,7 @@
 {-
-: Auteur: Stéphane Marengo
-: Date: 27.04.2022
+: Auteur:   Stéphane Marengo
+: Date:     27.04.2022
+: Exercice: Décompte de mots
 -}
 
 import Control.Monad

@@ -1,6 +1,7 @@
 {-
-: Auteur: Stéphane Marengo
-: Date: 27.04.2022
+: Auteur:   Stéphane Marengo
+: Date:     27.04.2022
+: Exercice: Symboles JSON
 -}
 
 import Control.Monad

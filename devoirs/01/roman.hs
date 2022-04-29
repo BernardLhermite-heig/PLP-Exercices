@@ -1,6 +1,7 @@
 {-
-: Auteur: Stéphane Marengo
-: Date: 27.04.2022
+: Auteur:   Stéphane Marengo
+: Date:     27.04.2022
+: Exercice: Numération romaine
 -}
 
 module Roman (toRoman, fromRoman) where
@@ -25,20 +26,13 @@ romanMap =
     (1, "I")
   ]
 
-toValue :: Char -> Int
-toValue c
-  | isJust f = fst $ fromJust f
-  | otherwise = 0
-  where
-    f = find ((== [c]) . snd) romanMap
-
-toValue' 'I' = 1
-toValue' 'V' = 5
-toValue' 'X' = 10
-toValue' 'L' = 50
-toValue' 'C' = 100
-toValue' 'D' = 500
-toValue' 'M' = 1000
+toValue 'I' = 1
+toValue 'V' = 5
+toValue 'X' = 10
+toValue 'L' = 50
+toValue 'C' = 100
+toValue 'D' = 500
+toValue 'M' = 1000
 
 toRoman :: Int -> Maybe String
 toRoman x

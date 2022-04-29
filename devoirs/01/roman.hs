@@ -6,9 +6,6 @@
 
 module Roman (toRoman, fromRoman) where
 
-import Data.List
-import Data.Maybe
-
 romanMap :: [(Int, [Char])]
 romanMap =
   [ (1000, "M"),
@@ -26,6 +23,7 @@ romanMap =
     (1, "I")
   ]
 
+toValue :: Char -> Int
 toValue 'I' = 1
 toValue 'V' = 5
 toValue 'X' = 10
@@ -33,6 +31,7 @@ toValue 'L' = 50
 toValue 'C' = 100
 toValue 'D' = 500
 toValue 'M' = 1000
+toValue c = error $ "Invalid roman numeral: " ++ [c]
 
 toRoman :: Int -> Maybe String
 toRoman x

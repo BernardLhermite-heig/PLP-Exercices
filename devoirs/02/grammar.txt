@@ -1,0 +1,47 @@
+Statement		-> Definition | Expr
+
+Definition		-> FunctionDef | VariableDef
+FunctionDef		-> 'voici' FunctionName ('avec' Args)? 'pour' Expr
+FunctionName 	-> Identifier
+Args			-> Arg | Arg 'et' Args
+Arg				-> Identifier
+VariableDef		-> VariableName is Expr
+VariableName	-> Identifier
+Identifier		-> Alpha+
+
+Digit 			-> [0-9]
+Integer			-> Digit | Digit Digits
+Alpha			-> UpperChar | LowerChar
+UpperChar 		-> [A-Z]
+LowerChar		-> [a-z]
+Boolean			-> yep | pasyep
+Tuple			-> '(' Expr 'et' Expr ')'
+
+VariableOcc		-> VariableName	-- utile?
+
+FunctionApp		-> FunctionName ('avec' FunctionAppArgs)?
+FunctionAppArgs	-> FunctionAppArg | FunctionAppArg 'et' FunctionAppArgs
+FunctionAppArg	-> Expr
+
+LetIn			-> 'soit' (Definition)*
+LetInDefs		-> LetInDef | LetInDef 'et' LetInDefs
+LetInDef		-> Definition
+
+Case 			-> 'ceci' Expr 'est' CaseOfs
+CaseOfs			-> CaseOf | CaseOf CaseOfs
+CaseOf			-> 'peut-etre' CaseOfPattern 'donc' Expr
+CaseOfPattern	-> 'peu-importe' | VariableName | Literal
+
+Literal			-> Integer | Boolean | Tuple
+
+UnaryOp 		-> - | !
+BinaryOp		-> + | - | * | / | % | < | > | <= | >= | == | != | && | ||
+
+Expr			-> LetIn
+				 | CaseOf
+				 | UnaryOp Expr
+				 | Expr BinaryOp Expr
+				 | Literal
+				 | VariableOcc
+				 | FunctionApp
+	

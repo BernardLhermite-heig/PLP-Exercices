@@ -2,7 +2,7 @@
 module Parser where
 
 import Lexer
--- import Src.Language
+import Language
 }
 
 %name parser
@@ -37,13 +37,13 @@ import Lexer
     'stronger than'         { TokenPosn Greater _}
     'as weak as'            { TokenPosn LesserEq _}
     'as strong as'          { TokenPosn GreaterEq _}
-    'same as'               { TokenPosn Equal _}
+    'same as'               { TokenPosn Eq _}
     'different of'          { TokenPosn Neq _}
     'both'                  { TokenPosn And _}
     'either'                { TokenPosn Or _}
     'yep'                   { TokenPosn Truthy _ }
     'pasyep'                { TokenPosn Falsy _ }
-    'identifier'            { TokenPosn (Variable _) _ }
+    'identifier'            { TokenPosn (Name $$) _ }
     'integer'               { TokenPosn (Integer $$) _ }
     'Integer'               { TokenPosn (Type "Integer") _ }
     'Boolean'               { TokenPosn (Type "Boolean") _ }
@@ -59,20 +59,20 @@ import Lexer
 %%
 
 Statement
-    : Definition                                {Def $$}
-    | Expr                                      {Expr $$}
+    : Definition                                {Def $1}
+    | Expr                                      {Expr $1}
 
 Expr
     : 'put that' LetInDefs 'into' Expr          {ELet $2 $4}
     | 'what is' Expr '?' CaseOfs                {ECaseOf $2 $4}
     | UnaryOp Expr                              {EUnary $1 $2}
     | Expr BinaryOp Expr                        {EBinary $2 $1 $3}
-    | Literal                                   {EValue $$}
-    | 'identifier'                              {EVar $$}
-    | FunctionApp                               {$$}
+    | Literal                                   {EValue $1}
+    | 'identifier'                              {EVar $1}
+    | FunctionApp                               {$1}
 
 Definition
-    : FunctionDef                               {$$}        
+    : FunctionDef                               {$1}        
     | 'this' 'identifier' 'is' Expr             {Variable $2 $4}
    
 FunctionDef
@@ -81,44 +81,44 @@ FunctionDef
 FArgs
     : 'with' Args                               {$2}
 Args
-    : Arg                                       {[$$]}
+    : Arg                                       {[$1]}
     | Args 'and' Arg                            {$3:$1}
 Arg
     : Type 'identifier'                         {Arg $1 $2}
-    | TypeTuple                                 {Arg $$ ""}
+    | TypeTuple                                 {Arg $1 ""}
 Type
     : 'Integer'                                 {TInteger}
     | 'Boolean'                                 {TBool}
-    | TypeTuple                                 {$$}
+    | TypeTuple                                 {$1}
 TypeTuple
     : '(' Arg 'and his friend' Arg ')'          {TTuple $2 $4}
-VariableName: 'identifier'                      {Identifier $$}
+VariableName: 'identifier'                      {Identifier $1}
 
 FunctionApp
     : 'summon' 'identifier'                              {EApp $1 []}
     | 'summon' 'identifier' 'with' FunctionAppArgs       {EApp $1 $3}
 FunctionAppArgs
-    : FunctionAppArg                            {[$$]}
+    : FunctionAppArg                            {[$1]}
     | FunctionAppArgs 'and' FunctionAppArg      {$2:$1}
 FunctionAppArg
-    : Expr                                      {Expr $$}
+    : Expr                                      {Expr $1}
     
 LetInDefs
-    : Definition                                {[$$]}
+    : Definition                                {[$1]}
     | LetInDefs 'and' Definition                {$3:$1}
     
 CaseOfs
-    : CaseOf                                    {[$$]}
+    : CaseOf                                    {[$1]}
     | CaseOf CaseOfs                            {$2:$1}
 CaseOf
     : 'perhaps' Pattern 'which does' Expr       {($2,$4)}
 Pattern
     : 'who cares'                               {PAny}
-    | VariableName                              {PVar $$}
-    | Literal                                   {PValue $$}
+    | VariableName                              {PVar $1}
+    | Literal                                   {PValue $1}
 
 Literal
-    : 'integer'                                 {VInteger $$}
+    : 'integer'                                 {VInteger $1}
     | 'yep'                                     {VBool True}
     | 'pasyep'                                  {VBool False}
     | '(' Expr 'and his friend' Expr ')'        {VTuple $2 $4}

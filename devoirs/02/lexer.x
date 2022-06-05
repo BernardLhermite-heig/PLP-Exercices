@@ -1,5 +1,7 @@
 {
 module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
+
+import Language
 }
 
 %wrapper "posn"
@@ -15,18 +17,19 @@ tokens :-
   $white+                         ;
   "--".*                          ;
   "behold"                        { tok Behold }
+  "summon"                        { tok Summon }
   "with"                          { tok With }
   --that                          { tok That }
   "and"                           { tok AndParam }
   "this"                          { tok This }
   "is"                            { tok Is }
-  \(                              { tok LParen }
-  \)                              { tok RParen }
+  "("                             { tok LParen }
+  ")"                             { tok RParen }
   "and his friend"                { tok AndHisFriend }
   "put that"                      { tok PutThat }
   "into"                          { tok Into }
   "what is"                       { tok WhatIs }
-  \?                              { tok QuestionMark }
+  "?"                             { tok QuestionMark }
   "perhaps"                       { tok Perhaps }
   "who cares"                     { tok WhoCares }
   "which does"                    { tok WhichDoes }
@@ -47,8 +50,10 @@ tokens :-
   "either"                        { tok Or }
   "yep"                           { tok Truthy }
   "pasyep"                        { tok Falsy }
+  "Integer" | "Boolean"           { \p s -> TokenPosn (Type s) p }
+
   $digit+                         { \p s -> TokenPosn (Integer $ read s) p }
-  $alpha+                         { \p s -> TokenPosn (Variable s) p }
+  $alpha+                         { \p s -> TokenPosn (Name s) p }
   
   .                               { \p s -> TokenPosn (Error s) p }
 
@@ -68,6 +73,7 @@ instance Show TokenPosn where
 
 data Token
     = Behold
+    | Summon
     | With
     | That
     | AndParam
@@ -101,8 +107,9 @@ data Token
 
     | Truthy
     | Falsy
-    | Variable String    
+    | Name String    
     | Integer Int
+    | Type String
 
     | Error String
     deriving (Eq, Show)
@@ -113,10 +120,9 @@ isError _ = False
 hasErrors ts = if null errors then Nothing else Just errors
   where errors = filter isError ts
 
-
 lexer s = case errors of
-  (Nothing)     -> Left tokens
-  (Just errors) -> Right errors
+  (Nothing)     -> tokens
+  (Just errors) -> errors
   where
     tokens = alexScanTokens s
     errors = hasErrors tokens

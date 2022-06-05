@@ -5,6 +5,7 @@ type Identifier = String
 data Stmt
   = Def Definition
   | Expr Expr
+  deriving Show
 
 data Expr
   = EApp Identifier [Expr]
@@ -13,18 +14,22 @@ data Expr
   | EValue Value
   | ECaseOf Expr [(Pattern, Expr)]
   | EUnary Char Expr
-  | EBinary Char Expr Expr
+  | EBinary String Expr Expr
+  deriving Show
 
 data Pattern
   = PVar Identifier
   | PValue Value
   | PAny
+  deriving Show
 
 data Definition
   = Function Identifier [Arg] Expr
   | Variable Identifier Expr
+  deriving Show
 
 data Arg = Arg Type Identifier
+  deriving Show
 
 data Value = VBool Bool | VInteger Int | VTuple Value Value
   deriving (Show, Eq)

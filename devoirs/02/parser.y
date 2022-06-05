@@ -128,19 +128,19 @@ UnaryOp
     | 'not'                                     {'!'}
 
 BinaryOp
-    : 'plus'                                    {'+'}
-    | 'minus'                                   {'-'}
-    | 'times'                                   {'*'}
-    | 'split'                                   {'/'}
-    | 'rest'                                    {'%'}
-    | 'weaker than'                             {'<'}
-    | 'stronger than'                           {'>'}
-    | 'as weak as'                              {'<='}
-    | 'as strong as'                            {'>='}
-    | 'same as'                                 {'=='}
-    | 'different of'                            {'!='}
-    | 'both'                                    {'&&'}
-    | 'either'                                  {'||'}
+    : 'plus'                                    {"+"}
+    | 'minus'                                   {"-"}
+    | 'times'                                   {"*"}
+    | 'split'                                   {"/"}
+    | 'rest'                                    {"%"}
+    | 'weaker than'                             {"<"}
+    | 'stronger than'                           {">"}
+    | 'as weak as'                              {"<="}
+    | 'as strong as'                            {">="}
+    | 'same as'                                 {"=="}
+    | 'different of'                            {"!="}
+    | 'both'                                    {"&&"}
+    | 'either'                                  {"||"}
 
 {
 

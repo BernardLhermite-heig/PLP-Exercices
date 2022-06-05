@@ -1,11 +1,11 @@
 Statement		-> Definition | Expr
 
 Definition		-> FunctionDef | VariableDef
-FunctionDef		-> 'voici' FunctionName ('avec' Args)? 'pour' Expr
+FunctionDef		-> 'behold' FunctionName ('with' Args)? 'which does' Expr
 FunctionName 	-> Identifier
-Args			-> Arg | Arg 'et' Args
+Args			-> Arg | Arg 'and' Args
 Arg				-> Identifier
-VariableDef		-> VariableName is Expr
+VariableDef		-> 'this' VariableName 'is' Expr
 VariableName	-> Identifier
 Identifier		-> Alpha+
 
@@ -15,27 +15,29 @@ Alpha			-> UpperChar | LowerChar
 UpperChar 		-> [A-Z]
 LowerChar		-> [a-z]
 Boolean			-> yep | pasyep
-Tuple			-> '(' Expr 'et' Expr ')'
+Tuple			-> '(' Expr 'and his friend' Expr ')'
 
 VariableOcc		-> VariableName	-- utile?
 
-FunctionApp		-> FunctionName ('avec' FunctionAppArgs)?
-FunctionAppArgs	-> FunctionAppArg | FunctionAppArg 'et' FunctionAppArgs
+FunctionApp		-> FunctionName ('with' FunctionAppArgs)?
+FunctionAppArgs	-> FunctionAppArg | FunctionAppArg 'and' FunctionAppArgs
 FunctionAppArg	-> Expr
 
-LetIn			-> 'soit' (Definition)*
-LetInDefs		-> LetInDef | LetInDef 'et' LetInDefs
+LetIn			-> 'put that' (Definition)* 'into' Expr 
+LetInDefs		-> LetInDef | LetInDef 'and' LetInDefs
 LetInDef		-> Definition
 
-Case 			-> 'ceci' Expr 'est' CaseOfs
+Case 			-> 'what is' Expr '?' CaseOfs
 CaseOfs			-> CaseOf | CaseOf CaseOfs
-CaseOf			-> 'peut-etre' CaseOfPattern 'donc' Expr
-CaseOfPattern	-> 'peu-importe' | VariableName | Literal
+CaseOf			-> 'perhaps' CaseOfPattern 'which does' Expr
+CaseOfPattern	-> 'who cares' | VariableName | Literal
 
 Literal			-> Integer | Boolean | Tuple
 
-UnaryOp 		-> - | !
-BinaryOp		-> + | - | * | / | % | < | > | <= | >= | == | != | && | ||
+UnaryOp 		-> neg | not
+BinaryOp		-> plus | minus | times | split | rest 
+				 | weaker than | stronger than | as weak as | as strong as 
+				 | same as | different of | both | either
 
 Expr			-> LetIn
 				 | CaseOf

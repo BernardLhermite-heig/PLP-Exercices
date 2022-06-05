@@ -76,8 +76,8 @@ Definition
     | 'this' 'identifier' 'is' Expr             {Variable $2 $4}
    
 FunctionDef
-    : 'behold' 'identifier' FArgs 'which does' Expr   {Function $2 $5}
-    | 'behold' 'identifier' 'which does' Expr   {Function $2 $4}
+    : 'behold' 'identifier' FArgs 'which does' Expr   {Function $2 $3 $5}
+    | 'behold' 'identifier' 'which does' Expr   {Function $2 [] $4}
 FArgs
     : 'with' Args                               {$2}
 Args
@@ -91,17 +91,16 @@ Type
     | 'Boolean'                                 {TBool}
     | TypeTuple                                 {$1}
 TypeTuple
-    : '(' Arg 'and his friend' Arg ')'          {TTuple $2 $4}
-VariableName: 'identifier'                      {Identifier $1}
+    : '(' Type 'and his friend' Type ')'        {TTuple $2 $4}
 
 FunctionApp
-    : 'summon' 'identifier'                              {EApp $1 []}
-    | 'summon' 'identifier' 'with' FunctionAppArgs       {EApp $1 $3}
+    : 'summon' 'identifier' 'with' FunctionAppArgs       {EApp $2 $4}
+    | 'summon' 'identifier'                              {EApp $2 []}
 FunctionAppArgs
     : FunctionAppArg                            {[$1]}
-    | FunctionAppArgs 'and' FunctionAppArg      {$2:$1}
+    | FunctionAppArgs 'and' FunctionAppArg      {$3:$1}
 FunctionAppArg
-    : Expr                                      {Expr $1}
+    : Expr                                      {$1}
     
 LetInDefs
     : Definition                                {[$1]}
@@ -109,12 +108,12 @@ LetInDefs
     
 CaseOfs
     : CaseOf                                    {[$1]}
-    | CaseOf CaseOfs                            {$2:$1}
+    | CaseOf CaseOfs                            {$1:$2}
 CaseOf
     : 'perhaps' Pattern 'which does' Expr       {($2,$4)}
 Pattern
     : 'who cares'                               {PAny}
-    | VariableName                              {PVar $1}
+    | 'identifier'                              {PVar $1}
     | Literal                                   {PValue $1}
 
 Literal

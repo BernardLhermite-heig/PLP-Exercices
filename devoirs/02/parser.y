@@ -3,8 +3,6 @@ module Parser where
 
 import Lexer
 import Language
-import Semantics -- TODO gtfo
-import Eval
 }
 
 %name parser

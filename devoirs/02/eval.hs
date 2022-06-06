@@ -1,8 +1,11 @@
-module Eval (eval) where
+module Eval (eval, emptyEnv, Env) where
 
 import Language
 
 type Env = [(Identifier, Value)]
+
+emptyEnv :: Env
+emptyEnv = []
 
 value :: Identifier -> Env -> Value
 value id env = case lookup id env of

@@ -13,8 +13,14 @@ data Expr
   | EVar Identifier
   | EValue Value
   | ECaseOf Expr [(Pattern, Expr)]
-  | EUnary Char Expr
-  | EBinary String Expr Expr
+  | EUnary Operator Expr
+  | EBinary Operator Expr Expr
+  deriving (Show)
+
+data Operator = Operator OperatorType String
+  deriving (Show)
+
+data OperatorType = Arithmetic | Comparison | Relational | Logical
   deriving (Show)
 
 data Pattern
@@ -23,9 +29,7 @@ data Pattern
   | PAny
   deriving (Show)
 
-data Definition
-  = Function Identifier [Arg] Expr
-  | Variable Identifier Expr
+data Definition = Definition Identifier [Arg] Expr
   deriving (Show)
 
 data Arg = Arg Type Identifier
@@ -34,5 +38,5 @@ data Arg = Arg Type Identifier
 data Value = VBool Bool | VInteger Int | VTuple Expr Expr
   deriving (Show)
 
-data Type = TBool | TInteger | TTuple Type Type
+data Type = TBool | TInteger | TTuple Type Type | TAny
   deriving (Show, Eq)

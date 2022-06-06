@@ -3,6 +3,8 @@ module Parser where
 
 import Lexer
 import Language
+import Semantics -- TODO gtfo
+import Eval
 }
 
 %name parser
@@ -55,13 +57,13 @@ import Language
 %left 'plus' 'minus'
 %left 'times' 'split' 'rest'
 %left 'neg' 'not'
-
+-- %left '('
 %%
 
 Statement
     : Definition                                {Def $1}
-    -- | '(' Expr ')'                              {Expr $2}
     | Expr                                      {Expr $1}
+    -- | '(' Statement ')'                         {$2}
 
 Expr
     : 'put that' LetInDefs 'into' Expr          {ELet $2 $4}
@@ -74,11 +76,11 @@ Expr
 
 Definition
     : FunctionDef                               {$1}        
-    | 'this' 'identifier' 'is' Expr             {Variable $2 $4}
+    | 'this' 'identifier' 'is' Expr             {Definition $2 [] $4}
    
 FunctionDef
-    : 'behold' 'identifier' FArgs 'which does' Expr   {Function $2 $3 $5}
-    | 'behold' 'identifier' 'which does' Expr   {Function $2 [] $4}
+    : 'behold' 'identifier' FArgs 'which does' Expr   {Definition $2 $3 $5}
+    | 'behold' 'identifier' 'which does' Expr   {Definition $2 [] $4}
 FArgs
     : 'with' Args                               {$2}
 Args
@@ -124,23 +126,23 @@ Literal
     | '(' Expr 'and his friend' Expr ')'        {VTuple $2 $4}
 
 UnaryOp
-    : 'neg'                                     {'-'}
-    | 'not'                                     {'!'}
+    : 'neg'                                     {Operator Arithmetic "-"}
+    | 'not'                                     {Operator Logical "!"}
 
 BinaryOp
-    : 'plus'                                    {"+"}
-    | 'minus'                                   {"-"}
-    | 'times'                                   {"*"}
-    | 'split'                                   {"/"}
-    | 'rest'                                    {"%"}
-    | 'weaker than'                             {"<"}
-    | 'stronger than'                           {">"}
-    | 'as weak as'                              {"<="}
-    | 'as strong as'                            {">="}
-    | 'same as'                                 {"=="}
-    | 'different of'                            {"!="}
-    | 'both'                                    {"&&"}
-    | 'either'                                  {"||"}
+    : 'plus'                                    {Operator Arithmetic "+"}
+    | 'minus'                                   {Operator Arithmetic "-"}
+    | 'times'                                   {Operator Arithmetic "*"}
+    | 'split'                                   {Operator Arithmetic "/"}
+    | 'rest'                                    {Operator Arithmetic "%"}
+    | 'weaker than'                             {Operator Relational "<"}
+    | 'stronger than'                           {Operator Relational ">"}
+    | 'as weak as'                              {Operator Relational "<="}
+    | 'as strong as'                            {Operator Relational ">="}
+    | 'same as'                                 {Operator Comparison "=="}
+    | 'different of'                            {Operator Comparison "!="}
+    | 'both'                                    {Operator Logical "&&"}
+    | 'either'                                  {Operator Logical "||"}
 
 {
 

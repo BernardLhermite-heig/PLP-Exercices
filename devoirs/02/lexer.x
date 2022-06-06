@@ -122,8 +122,11 @@ hasErrors ts = if null errors then Nothing else Just errors
 
 lexer s = case errors of
   (Nothing)     -> tokens
-  (Just errors) -> errors
+  (Just errors) -> error $ "Lexer error:" ++ showErrors errors
   where
     tokens = alexScanTokens s
     errors = hasErrors tokens
+
+showErrors [] = ""
+showErrors (e:es) = "\n\t-" ++ show e ++ showErrors es
 }

@@ -1,10 +1,30 @@
+Fonctionnalités :
+Une définition ne retourne pas de valeur
+lors de l’évaluation mais augmente l’environnement de 
+l’interpréteur (global) avec une nouvelle association
+alors qu’une expression retourne une valeur d’exécution 
+durant l’évaluation.
+
+
+Définition de fonctions (non-récursives) ; 
+définition de variables ; 
+littéraux entiers, booléens, tuples ;
+occurrences de variable ;
+applications de fonction ; 
+expressions let-in avec plusieurs définitions ; 
+expressions case-of sans gardes avec motifs universel, variable, littéraux ; 
+opérations unaires, binaires.
+
+
 Statement		-> Definition | Expr
 
 Definition		-> FunctionDef | VariableDef
-FunctionDef		-> 'behold' FunctionName ('with' Args)? 'which does' Expr
+FunctionDef		-> 'behold' FunctionName ['with' Args] 'which does' Expr
 FunctionName 	-> Identifier
 Args			-> Arg | Arg 'and' Args
-Arg				-> Identifier
+Arg				-> Type Identifier | TypeTuple
+Type 			-> 'Integer' | 'Boolean' | TypeTuple
+TypeTuple		-> '(' Arg 'and his friend' Arg ')'
 VariableDef		-> 'this' VariableName 'is' Expr
 VariableName	-> Identifier
 Identifier		-> Alpha+
@@ -19,18 +39,19 @@ Tuple			-> '(' Expr 'and his friend' Expr ')'
 
 VariableOcc		-> VariableName	-- utile?
 
-FunctionApp		-> FunctionName ('with' FunctionAppArgs)?
+FunctionApp		-> 'summon' FunctionName ['with' FunctionAppArgs]
 FunctionAppArgs	-> FunctionAppArg | FunctionAppArg 'and' FunctionAppArgs
 FunctionAppArg	-> Expr
 
-LetIn			-> 'put that' (Definition)* 'into' Expr 
+LetIn			-> 'put that' {LetInDefs} 'into' Expr 
 LetInDefs		-> LetInDef | LetInDef 'and' LetInDefs
 LetInDef		-> Definition
 
 Case 			-> 'what is' Expr '?' CaseOfs
 CaseOfs			-> CaseOf | CaseOf CaseOfs
 CaseOf			-> 'perhaps' CaseOfPattern 'which does' Expr
-CaseOfPattern	-> 'who cares' | VariableName | Literal
+Pattern			-> 'who cares' | VariableName | Literal
+
 
 Literal			-> Integer | Boolean | Tuple
 

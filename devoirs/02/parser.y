@@ -60,6 +60,7 @@ import Language
 
 Statement
     : Definition                                {Def $1}
+    -- | '(' Expr ')'                              {Expr $2}
     | Expr                                      {Expr $1}
 
 Expr
@@ -143,5 +144,8 @@ BinaryOp
 
 {
 
-parseError ts = error $ "Parse error at " ++ show ts
+
+parseError [] = error "Parse error at beginning of expression"
+parseError (f:ts) = error $ "Parse error between " ++ show f ++ " and " ++ show l
+    where l = last ts
 }

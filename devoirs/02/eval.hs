@@ -1,6 +1,7 @@
 module Eval (eval, emptyEnv, Env) where
 
 import Language
+import Semantics
 
 emptyEnv :: Env
 emptyEnv = []
@@ -9,9 +10,6 @@ value :: Identifier -> Env -> Value
 value id env = case lookup id env of
   Nothing -> error ("undefined variable: " ++ id)
   Just v -> v
-
-augmentWithArgs :: [Arg] -> Env -> Env
-augmentWithArgs ids env = error ""
 
 eval :: Stmt -> Env -> Either Env Value
 eval (Def def) env = Left $ evalDef def env
@@ -39,7 +37,19 @@ matchPattern env pattern cond = case pattern of
   _ -> False
 
 evalExpr :: Expr -> Env -> Value
-evalExpr (EApp id exprs) env = error "not implemented"
+evalExpr e@(EApp id exprs) env = case value id env of
+  VFunction expr args env' -> case exprs of
+    [] -> evalExpr expr env
+    _ -> evalExpr expr env'
+    where
+      env' = zipWith matchArg exprs args ++ env
+      matchArg expr (Arg t id)
+        | tVal == t = (id, val)
+        | otherwise = error ("type mismatch: excepted " ++ show t ++ ", actual " ++ show tVal)
+        where
+          val = evalExpr expr env
+          tVal = typeof (Expr $ EValue val) []
+  val -> val
 evalExpr (ELet defs expr) env = evalExpr expr env'
   where
     env' = foldr evalDef env defs

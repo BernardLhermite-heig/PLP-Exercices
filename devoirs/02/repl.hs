@@ -33,16 +33,6 @@ repl :: Move -> IO ()
 repl (InvalidMove oldEnv msg) = putStrLn msg >> repl (ValidMove oldEnv)
 repl (ValidMove env) =
   do
-    -- putStr "> "
-    -- line <- getLine
-    -- let tokens = lexer line
-    -- putStrLn $ show tokens
-    -- let stmt = parser tokens
-    -- putStrLn $ show stmt
-    -- case eval stmt env of
-    --   Left env' -> repl env'
-    --   Right val -> print val >> repl env
-
     putStr "> "
     hFlush stdout
     cmd <- getLine
@@ -62,12 +52,14 @@ repl (ValidMove env) =
         'h' -> Right help
         'q' -> Right quit
         _ -> Left $ InvalidMove env unknownCommand
-    parseCmd _ = Left $ InvalidMove env unknownCommand
+    parseCmd stmt = case eval (parseStmt stmt) env of
+      Left env' -> Left $ ValidMove env'
+      Right val -> Right $ print val
     unknownCommand = "Unknown command"
 
 parseStmt stmt = parser $ lexer stmt
 
 tryTypeOf str = catch (print (typeof (parseStmt str) [])) handler
-  where
-    handler :: SomeException -> IO ()
-    handler e = putStrLn $ "Error: " ++ show e
+
+handler :: SomeException -> IO ()
+handler e = putStrLn $ "Error: " ++ show e

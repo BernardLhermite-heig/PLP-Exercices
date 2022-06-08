@@ -2,9 +2,14 @@ module Language where
 
 type Identifier = String
 
+type Env = [(Identifier, Value)]
+
 data Stmt
   = Def Definition
   | Expr Expr
+  deriving (Show)
+
+data Definition = Definition Identifier [Arg] Expr
   deriving (Show)
 
 data Expr
@@ -29,14 +34,16 @@ data Pattern
   | PAny
   deriving (Show)
 
-data Definition = Definition Identifier [Arg] Expr
-  deriving (Show)
-
 data Arg = Arg Type Identifier
   deriving (Show)
 
-data Value = VBool Bool | VInteger Int | VTuple Expr Expr
+--todo tuple de N
+data Value
+  = VBool Bool
+  | VInteger Int
+  | VTuple Expr Expr
+  | VFunction Expr [Arg] Env
   deriving (Show)
 
-data Type = TBool | TInteger | TTuple Type Type | TAny
+data Type = TBool | TInteger | TTuple Type Type | TFunction Type [Type] | TAny
   deriving (Show, Eq)

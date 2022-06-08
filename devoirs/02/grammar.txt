@@ -43,7 +43,7 @@ FunctionApp		-> 'summon' FunctionName ['with' FunctionAppArgs]
 FunctionAppArgs	-> FunctionAppArg | FunctionAppArg 'and' FunctionAppArgs
 FunctionAppArg	-> Expr
 
-LetIn			-> 'put that' {LetInDefs} 'into' Expr 
+LetIn			-> 'put that' LetInDefs* 'into' Expr 
 LetInDefs		-> LetInDef | LetInDef 'and' LetInDefs
 LetInDef		-> Definition
 

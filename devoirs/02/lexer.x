@@ -1,7 +1,6 @@
 {
 module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
 
-import Language
 }
 
 %wrapper "posn"

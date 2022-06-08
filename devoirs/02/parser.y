@@ -65,6 +65,7 @@ Statement
 
 Expr
     : 'put that' LetInDefs 'into' Expr          {ELet $2 $4}
+    | 'put that' 'into' Expr                    {ELet [] $3}
     | 'what is' Expr '?' CaseOfs                {ECaseOf $2 $4}
     | UnaryOp Expr                              {EUnary $1 $2}
     | Expr BinaryOp Expr                        {EBinary $2 $1 $3}
@@ -78,9 +79,9 @@ Definition
    
 FunctionDef
     : 'behold' 'identifier' FArgs 'which does' Expr   {Definition $2 $3 $5}
-    | 'behold' 'identifier' 'which does' Expr   {Definition $2 [] $4}
 FArgs
-    : 'with' Args                               {$2}
+    :                                           {[]}            
+    | 'with' Args                               {$2}
 Args
     : Arg                                       {[$1]}
     | Args 'and' Arg                            {$3:$1}
@@ -143,8 +144,6 @@ BinaryOp
     | 'either'                                  {Operator Logical "||"}
 
 {
-
-
 parseError [] = error "Parse error at beginning of expression"
 parseError (f:ts) = error $ "Parse error between " ++ show f ++ " and " ++ show l
     where l = last ts

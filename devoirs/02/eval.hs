@@ -2,8 +2,6 @@ module Eval (eval, emptyEnv, Env) where
 
 import Language
 
-type Env = [(Identifier, Value)]
-
 emptyEnv :: Env
 emptyEnv = []
 
@@ -12,19 +10,45 @@ value id env = case lookup id env of
   Nothing -> error ("undefined variable: " ++ id)
   Just v -> v
 
+augmentWithArgs :: [Arg] -> Env -> Env
+augmentWithArgs ids env = error ""
+
 eval :: Stmt -> Env -> Either Env Value
 eval (Def def) env = Left $ evalDef def env
 eval (Expr expr) env = Right $ evalExpr expr env
 
 evalDef :: Definition -> Env -> Env
-evalDef (Definition id args expr) env = error "not implemented" --(id, result) : env
+evalDef (Definition id args expr) env = case args of
+  [] -> (id, evalExpr expr env) : env -- Variable / Function sans paramètres
+  _ -> (id, VFunction expr args env) : env -- Function avec paramètres
+
+areValueEqual :: Value -> Value -> Env -> Bool
+areValueEqual (VBool a) (VBool b) env = a == b
+areValueEqual (VInteger a) (VInteger b) env = a == b
+areValueEqual (VTuple l1 r1) (VTuple l2 r2) env = l && r
+  where
+    l = areValueEqual (evalExpr l1 env) (evalExpr l1 env) env
+    r = areValueEqual (evalExpr r1 env) (evalExpr r2 env) env
+areValueEqual _ _ _ = False
+
+matchPattern :: Env -> Pattern -> Value -> Bool
+matchPattern env pattern cond = case pattern of
+  PVar id | areValueEqual (value id env) cond env -> True
+  PValue val | areValueEqual val cond env -> True
+  PAny -> True
+  _ -> False
 
 evalExpr :: Expr -> Env -> Value
 evalExpr (EApp id exprs) env = error "not implemented"
-evalExpr (ELet defs expr) env = error "not implemented"
+evalExpr (ELet defs expr) env = evalExpr expr env'
+  where
+    env' = foldr evalDef env defs
 evalExpr (EVar id) env = value id env
 evalExpr (EValue value) env = value
-evalExpr (ECaseOf expr patterns) env = error "not implemented"
+evalExpr (ECaseOf expr patterns) env = evalExpr body env
+  where
+    cond = evalExpr expr env
+    (pattern, body) = head $ filter (\(p, _) -> matchPattern env p cond) patterns
 evalExpr (EUnary (Operator _ op) expr) env =
   case op of
     "-" -> case evalExpr expr env of

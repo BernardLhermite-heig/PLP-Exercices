@@ -1,6 +1,6 @@
 module Semantics (typeof) where
 
-import Language
+import Language hiding (Env)
 
 type Env = [(Identifier, Type)]
 
@@ -14,7 +14,9 @@ typeof (Def def) env = typeofDef def env
 typeof (Expr expr) env = typeofExpr expr env
 
 augmentWithDef :: Definition -> Env -> Env
-augmentWithDef (Definition id args _) env = foldl (\env (Arg t id) -> (id, t) : env) env args
+augmentWithDef (Definition id args _) env = t >> error (show t) ++ "oui" >> t
+  where
+    t = foldl (\env (Arg t id) -> (id, t) : env) env args
 
 augmentWithDefs :: [Definition] -> Env -> Env
 augmentWithDefs defs env = foldr augmentWithDef env defs
@@ -75,7 +77,8 @@ typeofExpr (EBinary (Operator opType op) lhs rhs) env =
 typeofValue :: Value -> Env -> Type
 typeofValue (VInteger _) env = TInteger
 typeofValue (VBool _) env = TBool
-typeofValue (VTuple l r) env = TTuple (typeofExpr l env) (typeofExpr r env)
+typeofValue (VTuple l r) env = TTuple (Arg (typeofExpr l env) "") (Arg (typeofExpr r env) "")
+typeofValue _ env = error "not implemented"
 
 typeofPattern :: Pattern -> Env -> Type
 typeofPattern (PVar id) env = getType id env

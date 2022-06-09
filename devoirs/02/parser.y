@@ -93,7 +93,7 @@ Type
     | 'Boolean'                                 {TBool}
     | TypeTuple                                 {$1}
 TypeTuple
-    : '(' Type 'and his friend' Type ')'        {TTuple $2 $4}
+    : '(' Arg 'and his friend' Arg ')'          {TTuple $2 $4}
 
 FunctionApp
     : 'summon' 'identifier' 'with' FunctionAppArgs       {EApp $2 $4}

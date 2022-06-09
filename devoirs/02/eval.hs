@@ -38,12 +38,12 @@ matchPattern env pattern cond = case pattern of
 
 evalExpr :: Expr -> Env -> Value
 evalExpr e@(EApp id exprs) env = case value id env of
-  VFunction expr args env' -> case exprs of
+  VFunction expr args env' -> case exprs of -- TODO fix les tuples
     [] -> evalExpr expr env
     _ -> evalExpr expr env'
     where
       env' = zipWith matchArg exprs args ++ env
-      matchArg expr (Arg t id)
+      matchArg expr (Arg t id) -- TODO type auto?
         | tVal == t = (id, val)
         | otherwise = error ("type mismatch: excepted " ++ show t ++ ", actual " ++ show tVal)
         where

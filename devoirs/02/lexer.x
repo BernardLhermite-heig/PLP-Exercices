@@ -50,6 +50,9 @@ tokens :-
   "yep"                           { tok Truthy }
   "pasyep"                        { tok Falsy }
   "Integer" | "Boolean"           { \p s -> TokenPosn (Type s) p }
+  "suppose"                       { tok Suppose } 
+  "then we can conclude"          { tok ThenWeCanConclude }
+  "rather than"                   { tok RatherThan }
 
   $digit+                         { \p s -> TokenPosn (Integer $ read s) p }
   $alpha+                         { \p s -> TokenPosn (Name s) p }
@@ -103,7 +106,9 @@ data Token
     | Neq
     | And
     | Or
-
+    | Suppose
+    | ThenWeCanConclude
+    | RatherThan
     | Truthy
     | Falsy
     | Name String    

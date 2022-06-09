@@ -72,20 +72,11 @@ evalExpr (EBinary (Operator opType op) lhs rhs) env =
   let v1 = evalExpr lhs env
       v2 = evalExpr rhs env
    in case op of
-        "+" -> case (v1, v2) of
-          (VInteger i1, VInteger i2) -> VInteger (i1 + i2)
-          _ -> error "runtime error: integer expected"
-        "-" -> case (v1, v2) of
-          (VInteger i1, VInteger i2) -> VInteger (i1 - i2)
-          _ -> error "runtime error: integer expected"
-        "*" -> case (v1, v2) of
-          (VInteger i1, VInteger i2) -> VInteger (i1 * i2)
-          _ -> error "runtime error: integer expected"
-        "/" -> case (v1, v2) of
-          (VInteger i1, VInteger i2) -> VInteger (i1 `div` i2)
+        op | op `elem` ["+", "-", "*", "/"] -> case (v1, v2) of
+          (VInteger i1, VInteger i2) -> VInteger (operatorArithm op i1 i2)
           _ -> error "runtime error: integer expected"
         op | op == "==" || op == "!=" -> case (v1, v2) of
-          (VInteger i1, VInteger i2) -> VBool (i1 == i2)
+          (VInteger i1, VInteger i2) -> VBool (operatorComp op i1 i2)
           (VBool b1, VBool b2) -> VBool (b1 == b2)
           (VTuple l1 r1, VTuple l2 r2) -> evalExpr (EBinary (Operator opType op) (EValue v1) (EValue v2)) env
             where
@@ -111,3 +102,14 @@ evalExpr (EBinary (Operator opType op) lhs rhs) env =
           (VBool b1, VBool b2) -> VBool (b1 || b2)
           _ -> error "runtime error: boolean expected"
         _ -> error $ "runtime error: unknown operator " ++ op
+
+
+operatorComp "==" = (==)
+operatorComp "!=" = (/=)
+operatorComp _ = error "runtime error: unknown operator"
+
+operatorArithm "-" = (-)
+operatorArithm "+" = (+)
+operatorArithm "*" = (*)
+operatorArithm "/" = div
+operatorArithm _ = error "runtime error: unknown operator"

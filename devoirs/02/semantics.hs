@@ -14,12 +14,14 @@ typeof (Def def) env = typeofDef def env
 typeof (Expr expr) env = typeofExpr expr env
 
 augmentWithDef :: Definition -> Env -> Env
-augmentWithDef (Definition id args _) env = t >> error (show t) ++ "oui" >> t
-  where
-    t = foldl (\env (Arg t id) -> (id, t) : env) env args
+augmentWithDef (Definition id args _) env = foldl (\env (Arg t id) -> (id, t) : env) env args
 
 augmentWithDefs :: [Definition] -> Env -> Env
-augmentWithDefs defs env = foldr augmentWithDef env defs
+augmentWithDefs [] e = e
+augmentWithDefs (x : xs) e = augmentWithDefs xs ((getName x, typeofDef x e) : e)
+  where
+    getName :: Definition -> String
+    getName (Definition s _ _) = s
 
 typeofDef :: Definition -> Env -> Type
 typeofDef def@(Definition id args expr) env = typeofExpr expr env'
@@ -28,6 +30,7 @@ typeofDef def@(Definition id args expr) env = typeofExpr expr env'
 
 typeofExpr :: Expr -> Env -> Type
 typeofExpr (EApp id exprs) env = error "not implemented"
+typeofExpr (EIf cond t f) env = error "not implemented"
 typeofExpr (ELet defs expr) env = typeofExpr expr env'
   where
     env' = augmentWithDefs defs env
@@ -39,7 +42,7 @@ typeofExpr (ECaseOf expr cases) env =
       caseType = fst $ head caseTypes -- si TAny premier type
       exprType = snd $ head caseTypes
    in if any (\(c, e) -> c /= caseType || e /= exprType) caseTypes
-        then error "case types do not match"
+        then throwError "case types do not match"
         else exprType
 typeofExpr (EUnary (Operator opType op) expr) env =
   let t = typeofExpr expr env
@@ -47,12 +50,12 @@ typeofExpr (EUnary (Operator opType op) expr) env =
         Arithmetic | op == "-" ->
           case t of
             TInteger -> t
-            _ -> error "type mismatch"
+            _ -> throwError "unary minus on non-integer"
         Logical | op == "!" ->
           case t of
             TBool -> t
-            _ -> error "type mismatch"
-        _ -> error "type mismatch"
+            _ -> throwError "unary not on non-bool"
+        _ -> throwError $ "undefined operator" ++ op
 typeofExpr (EBinary (Operator opType op) lhs rhs) env =
   let t1 = typeofExpr lhs env
       t2 = typeofExpr rhs env
@@ -60,19 +63,19 @@ typeofExpr (EBinary (Operator opType op) lhs rhs) env =
         Arithmetic | op == "+" || op == "-" || op == "*" || op == "/" ->
           case (t1, t2) of
             (TInteger, TInteger) -> TInteger
-            _ -> error "type mismatch"
+            _ -> throwError $ "arithmetic on non-integer" ++ op
         Logical | op == "&&" || op == "||" ->
           case (t1, t2) of
             (TBool, TBool) -> TBool
-            _ -> error "type mismatch"
+            _ -> throwError $ "logical on non-bool" ++ op
         Comparison | op == "==" || op == "!=" ->
           case (t1, t2) of
             (t1, t2) -> TBool
         Relational | op == "<" || op == ">" || op == "<=" || op == ">=" ->
           case (t1, t2) of
             (TInteger, TInteger) -> TBool
-            _ -> error "type mismatch"
-        _ -> error $ "type mismatch" ++ show opType
+            _ -> throwError $ "relational on non-integer" ++ op
+        _ -> throwError $ "undefined operator" ++ op
 
 typeofValue :: Value -> Env -> Type
 typeofValue (VInteger _) env = TInteger
@@ -84,3 +87,5 @@ typeofPattern :: Pattern -> Env -> Type
 typeofPattern (PVar id) env = getType id env
 typeofPattern (PValue value) env = typeofValue value env
 typeofPattern PAny env = TAny
+
+throwError msg = error ("type error: " ++ msg ++ " ")

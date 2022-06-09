@@ -47,6 +47,9 @@ import Language
     'integer'               { TokenPosn (Integer $$) _ }
     'Integer'               { TokenPosn (Type "Integer") _ }
     'Boolean'               { TokenPosn (Type "Boolean") _ }
+    'suppose'               { TokenPosn Suppose _ }
+    'then we can conclude'  { TokenPosn ThenWeCanConclude _ }
+    'rather than'           { TokenPosn RatherThan _ }
 
 %right 'into'
 %right 'either'
@@ -108,6 +111,9 @@ LetInDefs
     : Definition                                {[$1]}
     | LetInDefs 'and' Definition                {$3:$1}
     
+If 
+    : 'suppose' Expr 'then we can conclude' Expr 'rather than' Expr {EIf $2 $4 $6}
+
 CaseOfs
     : CaseOf                                    {[$1]}
     | CaseOf CaseOfs                            {$1:$2}

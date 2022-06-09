@@ -29,6 +29,7 @@ VariableDef		-> 'this' VariableName 'is' Expr
 VariableName	-> Identifier
 Identifier		-> Alpha+
 
+-- TODO demander si ok
 Digit 			-> [0-9]
 Integer			-> Digit | Digit Digits
 Alpha			-> UpperChar | LowerChar
@@ -46,6 +47,8 @@ FunctionAppArg	-> Expr
 LetIn			-> 'put that' LetInDefs* 'into' Expr 
 LetInDefs		-> LetInDef | LetInDef 'and' LetInDefs
 LetInDef		-> Definition
+
+If				-> 'suppose' Expr 'then we can conclude' Expr 'rather than' Expr
 
 Case 			-> 'what is' Expr '?' CaseOfs
 CaseOfs			-> CaseOf | CaseOf CaseOfs

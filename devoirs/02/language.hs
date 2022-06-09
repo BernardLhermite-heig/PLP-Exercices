@@ -20,6 +20,7 @@ data Expr
   | ECaseOf Expr [(Pattern, Expr)]
   | EUnary Operator Expr
   | EBinary Operator Expr Expr
+  | EIf Expr Expr Expr
   deriving (Show)
 
 -- behold swag with Integer x which does 1 plus x

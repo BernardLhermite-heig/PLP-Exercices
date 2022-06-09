@@ -1,39 +1,45 @@
-module Semantics (typeof) where
+--module Semantics (typeof) where
+module Semantics where
 
-import Language hiding (Env)
+import Language
 
-type Env = [(Identifier, Type)]
+type TEnv = [(Identifier, Type)]
 
-getType :: Identifier -> Env -> Type
+getType :: Identifier -> TEnv -> Type
 getType x env = case lookup x env of
   Just t -> t
-  Nothing -> error $ x ++ " not found"
+  Nothing -> throwError $ "identifier " ++ x ++ " not found"
 
-typeof :: Stmt -> Env -> Type
+typeof :: Stmt -> TEnv -> Type
 typeof (Def def) env = typeofDef def env
 typeof (Expr expr) env = typeofExpr expr env
 
-augmentWithDef :: Definition -> Env -> Env
-augmentWithDef (Definition id args _) env = foldl (\env (Arg t id) -> (id, t) : env) env args
-
-augmentWithDefs :: [Definition] -> Env -> Env
-augmentWithDefs [] e = e
-augmentWithDefs (x : xs) e = augmentWithDefs xs ((getName x, typeofDef x e) : e)
+addToEnv :: Definition -> TEnv -> TEnv
+addToEnv (Definition id args expr) env = (id, typeofExpr expr env') : env'
   where
-    getName :: Definition -> String
-    getName (Definition s _ _) = s
+    -- Ajout des éventuels arguments
+    env' = foldl (\env (Arg t id) -> (id, t) : env) env args
 
-typeofDef :: Definition -> Env -> Type
+addAllToEnv :: [Definition] -> TEnv -> TEnv
+addAllToEnv defs env = foldr addToEnv env defs
+
+typeofDef :: Definition -> TEnv -> Type
 typeofDef def@(Definition id args expr) env = typeofExpr expr env'
   where
-    env' = augmentWithDef def env
+    env' = addToEnv def env
 
-typeofExpr :: Expr -> Env -> Type
+typeofExpr :: Expr -> TEnv -> Type
 typeofExpr (EApp id exprs) env = error "not implemented"
-typeofExpr (EIf cond t f) env = error "not implemented"
+typeofExpr (EIf x y z) env =
+  case (typeofExpr x env, t1, t2) of
+    (TBool, t1, t2) | t1 == t2 -> t1
+    _ -> throwError $ "both branches must have the same type: t1 = " ++ show t1 ++ ", t2 = " ++ show t2
+  where
+    t1 = typeofExpr y env
+    t2 = typeofExpr z env
 typeofExpr (ELet defs expr) env = typeofExpr expr env'
   where
-    env' = augmentWithDefs defs env
+    env' = addAllToEnv defs env
 typeofExpr (EVar id) env = getType id env
 typeofExpr (EValue value) env = typeofValue value env
 typeofExpr (ECaseOf expr cases) env =
@@ -60,30 +66,30 @@ typeofExpr (EBinary (Operator opType op) lhs rhs) env =
   let t1 = typeofExpr lhs env
       t2 = typeofExpr rhs env
    in case opType of
-        Arithmetic | op == "+" || op == "-" || op == "*" || op == "/" ->
+        Arithmetic | op `elem` ["+", "-", "*", "/"] ->
           case (t1, t2) of
             (TInteger, TInteger) -> TInteger
-            _ -> throwError $ "arithmetic on non-integer" ++ op
-        Logical | op == "&&" || op == "||" ->
+            _ -> throwError $ "arithmetic operator on non-integer" ++ op
+        Logical | op `elem` ["&&", "||"] ->
           case (t1, t2) of
             (TBool, TBool) -> TBool
-            _ -> throwError $ "logical on non-bool" ++ op
-        Comparison | op == "==" || op == "!=" ->
+            _ -> throwError $ "logical operator on non-bool" ++ op
+        Comparison | op `elem` ["==", "!="] ->
           case (t1, t2) of
             (t1, t2) -> TBool
-        Relational | op == "<" || op == ">" || op == "<=" || op == ">=" ->
+        Relational | op `elem` ["<", ">", "<=", ">="] ->
           case (t1, t2) of
             (TInteger, TInteger) -> TBool
-            _ -> throwError $ "relational on non-integer" ++ op
+            _ -> throwError $ "relational operator on non-integer" ++ op
         _ -> throwError $ "undefined operator" ++ op
 
-typeofValue :: Value -> Env -> Type
+typeofValue :: Value -> TEnv -> Type
 typeofValue (VInteger _) env = TInteger
 typeofValue (VBool _) env = TBool
-typeofValue (VTuple l r) env = TTuple (Arg (typeofExpr l env) "") (Arg (typeofExpr r env) "")
+typeofValue (VTuple l r) env = TTuple (typeofExpr l env) (typeofExpr r env)
 typeofValue _ env = error "not implemented"
 
-typeofPattern :: Pattern -> Env -> Type
+typeofPattern :: Pattern -> TEnv -> Type
 typeofPattern (PVar id) env = getType id env
 typeofPattern (PValue value) env = typeofValue value env
 typeofPattern PAny env = TAny

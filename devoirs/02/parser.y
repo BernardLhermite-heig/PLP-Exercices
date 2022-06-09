@@ -3,6 +3,7 @@ module Parser where
 
 import Lexer
 import Language
+import Semantics
 }
 
 %name parser
@@ -96,7 +97,7 @@ Type
     | 'Boolean'                                 {TBool}
     | TypeTuple                                 {$1}
 TypeTuple
-    : '(' Arg 'and his friend' Arg ')'          {TTuple $2 $4}
+    : '(' Type 'and his friend' Type ')'          {TTuple $2 $4}
 
 FunctionApp
     : 'summon' 'identifier' 'with' FunctionAppArgs       {EApp $2 $4}

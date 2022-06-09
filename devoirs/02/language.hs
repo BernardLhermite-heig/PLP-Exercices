@@ -1,5 +1,8 @@
 module Language where
 
+-- Expr (ELet [Definition "y" [] (EValue (VBool True)),Definition "x" [] (EValue (VInteger 5))] (EVar "y"))
+-- Def (Definition "swag" [Arg TBool "y",Arg TInteger "x"] (EVar "x"))
+-- Expr (EValue (VTuple (EValue (VInteger 5)) (EValue (VBool True))))
 type Identifier = String
 
 type Env = [(Identifier, Value)]
@@ -57,5 +60,5 @@ data Value
   | VFunction Expr [Arg] Env
   deriving (Show)
 
-data Type = TBool | TInteger | TTuple Arg Arg | TFunction Type [Type] | TAny
+data Type = TBool | TInteger | TTuple Type Type | TFunction Type [Type] | TAny
   deriving (Show, Eq)

@@ -15,10 +15,12 @@ typeof (Def def) env = typeofDef def env
 typeof (Expr expr) env = typeofExpr expr env
 
 addToEnv :: Definition -> TEnv -> TEnv
-addToEnv (Definition id args expr) env = (id, typeofExpr expr env') : env'
+addToEnv (Definition id [] expr) env = (id, typeofExpr expr env) : env -- Variables
+addToEnv (Definition id args expr) env = (id, TFunction (typeofExpr expr env') args') : env -- Fonctions
   where
-    -- Ajout des éventuels arguments
+    -- Ajout des éventuels arguments TODO TFunc si argument il y a
     env' = foldl (\env (Arg t id) -> (id, t) : env) env args
+    args' = map (\(Arg t id) -> t) args
 
 addAllToEnv :: [Definition] -> TEnv -> TEnv
 addAllToEnv defs env = foldr addToEnv env defs
@@ -29,7 +31,7 @@ typeofDef def@(Definition id args expr) env = typeofExpr expr env'
     env' = addToEnv def env
 
 typeofExpr :: Expr -> TEnv -> Type
-typeofExpr (EApp id exprs) env = error "not implemented"
+typeofExpr (EApp id exprs) env = getType id env --error "not implemented"
 typeofExpr (EIf x y z) env =
   case (typeofExpr x env, t1, t2) of
     (TBool, t1, t2) | t1 == t2 -> t1
@@ -43,13 +45,16 @@ typeofExpr (ELet defs expr) env = typeofExpr expr env'
 typeofExpr (EVar id) env = getType id env
 typeofExpr (EValue value) env = typeofValue value env
 typeofExpr (ECaseOf expr cases) env =
-  let condType = typeofExpr expr env
-      caseTypes = map (\(pattern, expr) -> (typeofPattern pattern env, typeofExpr expr env)) cases
-      caseType = fst $ head caseTypes -- si TAny premier type
-      exprType = snd $ head caseTypes
-   in if any (\(c, e) -> c /= caseType || e /= exprType) caseTypes
-        then throwError "case types do not match"
-        else exprType
+  if any (\(c, e) -> (c /= caseType && c /= TAny) || e /= exprType) caseTypes
+    then throwError "case types do not match"
+    else exprType
+  where
+    condType = typeofExpr expr env -- Augmenter env de expr si PVar
+    caseTypes = map f cases
+    caseType = fst $ head caseTypes -- si TAny premier type
+    exprType = snd $ head caseTypes
+    f (PVar id, expr) = (condType, typeofExpr expr ((id, condType) : env))
+    f (pattern, expr) = (typeofPattern pattern env, typeofExpr expr env)
 typeofExpr (EUnary (Operator opType op) expr) env =
   let t = typeofExpr expr env
    in case opType of
@@ -92,6 +97,7 @@ typeofValue _ env = error "not implemented"
 typeofPattern :: Pattern -> TEnv -> Type
 typeofPattern (PVar id) env = getType id env
 typeofPattern (PValue value) env = typeofValue value env
+typeofPattern (PTuple l r) env = TTuple (typeofPattern l env) (typeofPattern r env)
 typeofPattern PAny env = TAny
 
 throwError msg = error ("type error: " ++ msg ++ " ")

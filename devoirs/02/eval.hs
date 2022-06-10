@@ -122,3 +122,14 @@ toArithm "+" = (+)
 toArithm "*" = (*)
 toArithm "/" = div
 toArithm _ = error "runtime error: unknown operator"
+
+f x = 2 * x
+
+y = 4
+
+x =
+  let y = 3
+   in case 3 * 3 of
+        3 -> "six"
+        y -> "not six"
+        z -> "not six6"

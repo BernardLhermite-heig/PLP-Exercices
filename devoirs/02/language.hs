@@ -43,6 +43,7 @@ data OperatorType = Arithmetic | Comparison | Relational | Logical
 data Pattern
   = PVar Identifier
   | PValue Value
+  | PTuple Pattern Pattern
   | PAny
   deriving (Show)
 

@@ -76,6 +76,7 @@ Expr
     | Literal                                   {EValue $1}
     | 'identifier'                              {EVar $1}
     | FunctionApp                               {$1}
+    | If                                        {$1}
 
 Definition
     : FunctionDef                               {$1}        
@@ -97,7 +98,7 @@ Type
     | 'Boolean'                                 {TBool}
     | TypeTuple                                 {$1}
 TypeTuple
-    : '(' Type 'and his friend' Type ')'          {TTuple $2 $4}
+    : '(' Type 'and his friend' Type ')'          {TTuple $2 $4} -- :t (5 and his friend (yep and his friend 4))
 
 FunctionApp
     : 'summon' 'identifier' 'with' FunctionAppArgs       {EApp $2 $4}
@@ -124,6 +125,8 @@ Pattern
     : 'who cares'                               {PAny}
     | 'identifier'                              {PVar $1}
     | Literal                                   {PValue $1}
+    | '(' Pattern 'and his friend' Pattern ')'  {PTuple $2 $4}
+    -- TODO ambigue Pattern tuple
 
 Literal
     : 'integer'                                 {VInteger $1}

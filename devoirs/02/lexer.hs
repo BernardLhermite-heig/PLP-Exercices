@@ -19957,25 +19957,24 @@ alex_actions = array (0 :: Int, 149)
   , (0,alex_action_26)
   ]
 
-{-# LINE 62 "lexer.x" #-}
+{-# LINE 61 "lexer.x" #-}
 -- Each right-hand side has type :: AlexPosn -> String -> Token
 tok :: Token -> AlexPosn -> String -> TokenPosn
-tok ctor p s = TokenPosn ctor p
+tok ctor p s = TokenPosn ctor p s
 
 -- The token type:
-data TokenPosn = TokenPosn Token AlexPosn deriving (Eq)
+data TokenPosn = TokenPosn Token AlexPosn String deriving (Eq)
 
 instance Show TokenPosn where
-  show (TokenPosn (Error s) (AlexPn _ l c)) 
-    = "unkown token " ++ show s ++ " on line " ++ show l ++ ", column " ++ show c
-  show (TokenPosn token (AlexPn _ l c)) 
-    = show token ++ "(" ++ show l ++ ", " ++ show c ++ ")"
+  show (TokenPosn Error (AlexPn _ l c) str) 
+    = "unkown token " ++ show str ++ " on line " ++ show l ++ ", column " ++ show c
+  show (TokenPosn _ (AlexPn _ l c) str) 
+    = show str ++ "(line " ++ show l ++ ", col " ++ show c ++ ")"
 
 data Token
     = Behold
     | Summon
     | With
-    | That
     | AndParam
     | This
     | Is
@@ -20013,10 +20012,10 @@ data Token
     | Integer Int
     | Type String
 
-    | Error String
+    | Error
     deriving (Eq, Show)
 
-isError (TokenPosn (Error _) _) = True
+isError (TokenPosn Error _ _) = True
 isError _ = False
 
 hasErrors ts = if null errors then Nothing else Just errors
@@ -20064,13 +20063,13 @@ alex_action_31 = tok And
 alex_action_32 = tok Or
 alex_action_33 = tok Truthy
 alex_action_34 = tok Falsy
-alex_action_35 = \p s -> TokenPosn (Type s) p
+alex_action_35 = \p s -> TokenPosn (Type s) p s
 alex_action_36 = tok Suppose
 alex_action_37 = tok ThenWeCanConclude
 alex_action_38 = tok RatherThan
-alex_action_39 = \p s -> TokenPosn (Integer $ read s) p
-alex_action_40 = \p s -> TokenPosn (Name s) p
-alex_action_41 = \p s -> TokenPosn (Error s) p
+alex_action_39 = \p s -> TokenPosn (Integer $ read s) p s
+alex_action_40 = \p s -> TokenPosn (Name s) p s
+alex_action_41 = tok Error
 
 #define ALEX_NOPRED 1
 -- -----------------------------------------------------------------------------

@@ -18,7 +18,6 @@ tokens :-
   "behold"                        { tok Behold }
   "summon"                        { tok Summon }
   "with"                          { tok With }
-  --that                          { tok That }
   "and"                           { tok AndParam }
   "this"                          { tok This }
   "is"                            { tok Is }
@@ -49,35 +48,34 @@ tokens :-
   "either"                        { tok Or }
   "yep"                           { tok Truthy }
   "pasyep"                        { tok Falsy }
-  "Integer" | "Boolean"           { \p s -> TokenPosn (Type s) p }
+  "Integer" | "Boolean"           { \p s -> TokenPosn (Type s) p s }
   "suppose"                       { tok Suppose } 
   "then we can conclude"          { tok ThenWeCanConclude }
   "rather than"                   { tok RatherThan }
 
-  $digit+                         { \p s -> TokenPosn (Integer $ read s) p }
-  $alpha+                         { \p s -> TokenPosn (Name s) p }
+  $digit+                         { \p s -> TokenPosn (Integer $ read s) p s }
+  $alpha+                         { \p s -> TokenPosn (Name s) p s }
   
-  .                               { \p s -> TokenPosn (Error s) p }
+  .                               { tok Error }
 
 {
 -- Each right-hand side has type :: AlexPosn -> String -> Token
 tok :: Token -> AlexPosn -> String -> TokenPosn
-tok ctor p s = TokenPosn ctor p
+tok ctor p s = TokenPosn ctor p s
 
 -- The token type:
-data TokenPosn = TokenPosn Token AlexPosn deriving (Eq)
+data TokenPosn = TokenPosn Token AlexPosn String deriving (Eq)
 
 instance Show TokenPosn where
-  show (TokenPosn (Error s) (AlexPn _ l c)) 
-    = "unkown token " ++ show s ++ " on line " ++ show l ++ ", column " ++ show c
-  show (TokenPosn token (AlexPn _ l c)) 
-    = show token ++ "(" ++ show l ++ ", " ++ show c ++ ")"
+  show (TokenPosn Error (AlexPn _ l c) str) 
+    = "unkown token " ++ show str ++ " on line " ++ show l ++ ", column " ++ show c
+  show (TokenPosn _ (AlexPn _ l c) str) 
+    = show str ++ "(line " ++ show l ++ ", col " ++ show c ++ ")"
 
 data Token
     = Behold
     | Summon
     | With
-    | That
     | AndParam
     | This
     | Is
@@ -115,10 +113,10 @@ data Token
     | Integer Int
     | Type String
 
-    | Error String
+    | Error
     deriving (Eq, Show)
 
-isError (TokenPosn (Error _) _) = True
+isError (TokenPosn Error _ _) = True
 isError _ = False
 
 hasErrors ts = if null errors then Nothing else Just errors

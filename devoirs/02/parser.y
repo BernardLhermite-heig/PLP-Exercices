@@ -11,46 +11,46 @@ import Semantics
 %error { parseError }
 
 %token
-    'behold'                { TokenPosn Behold _}
-    'summon'                { TokenPosn Summon _}
-    'with'                  { TokenPosn With _}
-    'and'                   { TokenPosn AndParam _}
-    'this'                  { TokenPosn This _}
-    'is'                    { TokenPosn Is _}
-    '('                     { TokenPosn LParen _}
-    ')'                     { TokenPosn RParen _}
-    'and his friend'        { TokenPosn AndHisFriend _}
-    'put that'              { TokenPosn PutThat _}
-    'into'                  { TokenPosn Into _}
-    'what is'               { TokenPosn WhatIs _}
-    '?'                     { TokenPosn QuestionMark _}
-    'perhaps'               { TokenPosn Perhaps _}
-    'who cares'             { TokenPosn WhoCares _}
-    'which does'            { TokenPosn WhichDoes _}
-    'neg'                   { TokenPosn Neg _}
-    'not'                   { TokenPosn Not _}
-    'plus'                  { TokenPosn Plus _}
-    'minus'                 { TokenPosn Minus _}
-    'times'                 { TokenPosn Mult _}
-    'split'                 { TokenPosn Div _}
-    'rest'                  { TokenPosn Mod _}
-    'weaker than'           { TokenPosn Lesser _}
-    'stronger than'         { TokenPosn Greater _}
-    'as weak as'            { TokenPosn LesserEq _}
-    'as strong as'          { TokenPosn GreaterEq _}
-    'same as'               { TokenPosn Eq _}
-    'different of'          { TokenPosn Neq _}
-    'both'                  { TokenPosn And _}
-    'either'                { TokenPosn Or _}
-    'yep'                   { TokenPosn Truthy _ }
-    'pasyep'                { TokenPosn Falsy _ }
-    'identifier'            { TokenPosn (Name $$) _ }
-    'integer'               { TokenPosn (Integer $$) _ }
-    'Integer'               { TokenPosn (Type "Integer") _ }
-    'Boolean'               { TokenPosn (Type "Boolean") _ }
-    'suppose'               { TokenPosn Suppose _ }
-    'then we can conclude'  { TokenPosn ThenWeCanConclude _ }
-    'rather than'           { TokenPosn RatherThan _ }
+    'behold'                { TokenPosn Behold _ _ }
+    'summon'                { TokenPosn Summon _ _ }
+    'with'                  { TokenPosn With _ _ }
+    'and'                   { TokenPosn AndParam _ _ }
+    'this'                  { TokenPosn This _ _ }
+    'is'                    { TokenPosn Is _ _ }
+    '('                     { TokenPosn LParen _ _ }
+    ')'                     { TokenPosn RParen _ _ }
+    'and his friend'        { TokenPosn AndHisFriend _ _ }
+    'put that'              { TokenPosn PutThat _ _ }
+    'into'                  { TokenPosn Into _ _ }
+    'what is'               { TokenPosn WhatIs _ _ }
+    '?'                     { TokenPosn QuestionMark _ _ }
+    'perhaps'               { TokenPosn Perhaps _ _ }
+    'who cares'             { TokenPosn WhoCares _ _ }
+    'which does'            { TokenPosn WhichDoes _ _ }
+    'neg'                   { TokenPosn Neg _ _ }
+    'not'                   { TokenPosn Not _ _ }
+    'plus'                  { TokenPosn Plus _ _ }
+    'minus'                 { TokenPosn Minus _ _ }
+    'times'                 { TokenPosn Mult _ _ }
+    'split'                 { TokenPosn Div _ _ }
+    'rest'                  { TokenPosn Mod _ _ }
+    'weaker than'           { TokenPosn Lesser _ _ }
+    'stronger than'         { TokenPosn Greater _ _ }
+    'as weak as'            { TokenPosn LesserEq _ _ }
+    'as strong as'          { TokenPosn GreaterEq _ _ }
+    'same as'               { TokenPosn Eq _ _ }
+    'different of'          { TokenPosn Neq _ _ }
+    'both'                  { TokenPosn And _ _ }
+    'either'                { TokenPosn Or _ _ }
+    'yep'                   { TokenPosn Truthy _ _ }
+    'pasyep'                { TokenPosn Falsy _ _ }
+    'identifier'            { TokenPosn (Name $$) _ _ }
+    'integer'               { TokenPosn (Integer $$) _ _ }
+    'Integer'               { TokenPosn (Type "Integer") _ _ }
+    'Boolean'               { TokenPosn (Type "Boolean") _ _ }
+    'suppose'               { TokenPosn Suppose _ _ }
+    'then we can conclude'  { TokenPosn ThenWeCanConclude _ _ }
+    'rather than'           { TokenPosn RatherThan _ _ }
 
 %right 'into'
 %right 'either'
@@ -124,8 +124,8 @@ CaseOf
 Pattern
     : 'who cares'                               {PAny}
     | 'identifier'                              {PVar $1}
-    | Literal                                   {PValue $1}
     | '(' Pattern 'and his friend' Pattern ')'  {PTuple $2 $4}
+    | Literal                                   {PValue $1}
     -- TODO ambigue Pattern tuple
 
 Literal

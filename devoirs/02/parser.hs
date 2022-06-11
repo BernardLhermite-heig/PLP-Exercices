@@ -704,7 +704,7 @@ action_83 _ = happyReduce_43
 action_84 (39) = happyShift action_95
 action_84 _ = happyFail (happyExpListPerState 84)
 
-action_85 _ = happyReduce_38
+action_85 _ = happyReduce_39
 
 action_86 (25) = happyShift action_12
 action_86 (30) = happyShift action_86
@@ -769,7 +769,7 @@ action_91 _ = happyReduce_32
 action_92 (32) = happyShift action_101
 action_92 _ = happyFail (happyExpListPerState 92)
 
-action_93 (32) = happyReduce_38
+action_93 (32) = happyReduce_39
 action_93 _ = happyReduce_8
 
 action_94 (32) = happyReduce_37
@@ -838,7 +838,7 @@ action_102 _ = happyFail (happyExpListPerState 102)
 
 action_103 _ = happyReduce_24
 
-action_104 _ = happyReduce_39
+action_104 _ = happyReduce_38
 
 happyReduce_1 = happySpecReduce_1  4 happyReduction_1
 happyReduction_1 (HappyAbsSyn6  happy_var_1)
@@ -908,7 +908,7 @@ happyReduction_8 (HappyAbsSyn21  happy_var_1)
 happyReduction_8 _  = notHappyAtAll 
 
 happyReduce_9 = happySpecReduce_1  5 happyReduction_9
-happyReduction_9 (HappyTerminal (TokenPosn (Name happy_var_1) _))
+happyReduction_9 (HappyTerminal (TokenPosn (Name happy_var_1) _ _))
 	 =  HappyAbsSyn5
 		 (EVar happy_var_1
 	)
@@ -938,7 +938,7 @@ happyReduction_12 _  = notHappyAtAll
 happyReduce_13 = happyReduce 4 6 happyReduction_13
 happyReduction_13 ((HappyAbsSyn5  happy_var_4) `HappyStk`
 	_ `HappyStk`
-	(HappyTerminal (TokenPosn (Name happy_var_2) _)) `HappyStk`
+	(HappyTerminal (TokenPosn (Name happy_var_2) _ _)) `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn6
@@ -949,7 +949,7 @@ happyReduce_14 = happyReduce 5 7 happyReduction_14
 happyReduction_14 ((HappyAbsSyn5  happy_var_5) `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn8  happy_var_3) `HappyStk`
-	(HappyTerminal (TokenPosn (Name happy_var_2) _)) `HappyStk`
+	(HappyTerminal (TokenPosn (Name happy_var_2) _ _)) `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn7
@@ -986,7 +986,7 @@ happyReduction_18 (HappyAbsSyn10  happy_var_3)
 happyReduction_18 _ _ _  = notHappyAtAll 
 
 happyReduce_19 = happySpecReduce_2  10 happyReduction_19
-happyReduction_19 (HappyTerminal (TokenPosn (Name happy_var_2) _))
+happyReduction_19 (HappyTerminal (TokenPosn (Name happy_var_2) _ _))
 	(HappyAbsSyn11  happy_var_1)
 	 =  HappyAbsSyn10
 		 (Arg happy_var_1 happy_var_2
@@ -1033,7 +1033,7 @@ happyReduction_24 (_ `HappyStk`
 happyReduce_25 = happyReduce 4 13 happyReduction_25
 happyReduction_25 ((HappyAbsSyn14  happy_var_4) `HappyStk`
 	_ `HappyStk`
-	(HappyTerminal (TokenPosn (Name happy_var_2) _)) `HappyStk`
+	(HappyTerminal (TokenPosn (Name happy_var_2) _ _)) `HappyStk`
 	_ `HappyStk`
 	happyRest)
 	 = HappyAbsSyn13
@@ -1041,7 +1041,7 @@ happyReduction_25 ((HappyAbsSyn14  happy_var_4) `HappyStk`
 	) `HappyStk` happyRest
 
 happyReduce_26 = happySpecReduce_2  13 happyReduction_26
-happyReduction_26 (HappyTerminal (TokenPosn (Name happy_var_2) _))
+happyReduction_26 (HappyTerminal (TokenPosn (Name happy_var_2) _ _))
 	_
 	 =  HappyAbsSyn13
 		 (EApp happy_var_2 []
@@ -1131,21 +1131,14 @@ happyReduction_36 _
 	)
 
 happyReduce_37 = happySpecReduce_1  20 happyReduction_37
-happyReduction_37 (HappyTerminal (TokenPosn (Name happy_var_1) _))
+happyReduction_37 (HappyTerminal (TokenPosn (Name happy_var_1) _ _))
 	 =  HappyAbsSyn20
 		 (PVar happy_var_1
 	)
 happyReduction_37 _  = notHappyAtAll 
 
-happyReduce_38 = happySpecReduce_1  20 happyReduction_38
-happyReduction_38 (HappyAbsSyn21  happy_var_1)
-	 =  HappyAbsSyn20
-		 (PValue happy_var_1
-	)
-happyReduction_38 _  = notHappyAtAll 
-
-happyReduce_39 = happyReduce 5 20 happyReduction_39
-happyReduction_39 (_ `HappyStk`
+happyReduce_38 = happyReduce 5 20 happyReduction_38
+happyReduction_38 (_ `HappyStk`
 	(HappyAbsSyn20  happy_var_4) `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn20  happy_var_2) `HappyStk`
@@ -1155,8 +1148,15 @@ happyReduction_39 (_ `HappyStk`
 		 (PTuple happy_var_2 happy_var_4
 	) `HappyStk` happyRest
 
+happyReduce_39 = happySpecReduce_1  20 happyReduction_39
+happyReduction_39 (HappyAbsSyn21  happy_var_1)
+	 =  HappyAbsSyn20
+		 (PValue happy_var_1
+	)
+happyReduction_39 _  = notHappyAtAll 
+
 happyReduce_40 = happySpecReduce_1  21 happyReduction_40
-happyReduction_40 (HappyTerminal (TokenPosn (Integer happy_var_1) _))
+happyReduction_40 (HappyTerminal (TokenPosn (Integer happy_var_1) _ _))
 	 =  HappyAbsSyn21
 		 (VInteger happy_var_1
 	)
@@ -1281,46 +1281,46 @@ happyNewToken action sts stk [] =
 happyNewToken action sts stk (tk:tks) =
 	let cont i = action i i tk (HappyState action) sts stk tks in
 	case tk of {
-	TokenPosn Behold _ -> cont 24;
-	TokenPosn Summon _ -> cont 25;
-	TokenPosn With _ -> cont 26;
-	TokenPosn AndParam _ -> cont 27;
-	TokenPosn This _ -> cont 28;
-	TokenPosn Is _ -> cont 29;
-	TokenPosn LParen _ -> cont 30;
-	TokenPosn RParen _ -> cont 31;
-	TokenPosn AndHisFriend _ -> cont 32;
-	TokenPosn PutThat _ -> cont 33;
-	TokenPosn Into _ -> cont 34;
-	TokenPosn WhatIs _ -> cont 35;
-	TokenPosn QuestionMark _ -> cont 36;
-	TokenPosn Perhaps _ -> cont 37;
-	TokenPosn WhoCares _ -> cont 38;
-	TokenPosn WhichDoes _ -> cont 39;
-	TokenPosn Neg _ -> cont 40;
-	TokenPosn Not _ -> cont 41;
-	TokenPosn Plus _ -> cont 42;
-	TokenPosn Minus _ -> cont 43;
-	TokenPosn Mult _ -> cont 44;
-	TokenPosn Div _ -> cont 45;
-	TokenPosn Mod _ -> cont 46;
-	TokenPosn Lesser _ -> cont 47;
-	TokenPosn Greater _ -> cont 48;
-	TokenPosn LesserEq _ -> cont 49;
-	TokenPosn GreaterEq _ -> cont 50;
-	TokenPosn Eq _ -> cont 51;
-	TokenPosn Neq _ -> cont 52;
-	TokenPosn And _ -> cont 53;
-	TokenPosn Or _ -> cont 54;
-	TokenPosn Truthy _ -> cont 55;
-	TokenPosn Falsy _ -> cont 56;
-	TokenPosn (Name happy_dollar_dollar) _ -> cont 57;
-	TokenPosn (Integer happy_dollar_dollar) _ -> cont 58;
-	TokenPosn (Type "Integer") _ -> cont 59;
-	TokenPosn (Type "Boolean") _ -> cont 60;
-	TokenPosn Suppose _ -> cont 61;
-	TokenPosn ThenWeCanConclude _ -> cont 62;
-	TokenPosn RatherThan _ -> cont 63;
+	TokenPosn Behold _ _ -> cont 24;
+	TokenPosn Summon _ _ -> cont 25;
+	TokenPosn With _ _ -> cont 26;
+	TokenPosn AndParam _ _ -> cont 27;
+	TokenPosn This _ _ -> cont 28;
+	TokenPosn Is _ _ -> cont 29;
+	TokenPosn LParen _ _ -> cont 30;
+	TokenPosn RParen _ _ -> cont 31;
+	TokenPosn AndHisFriend _ _ -> cont 32;
+	TokenPosn PutThat _ _ -> cont 33;
+	TokenPosn Into _ _ -> cont 34;
+	TokenPosn WhatIs _ _ -> cont 35;
+	TokenPosn QuestionMark _ _ -> cont 36;
+	TokenPosn Perhaps _ _ -> cont 37;
+	TokenPosn WhoCares _ _ -> cont 38;
+	TokenPosn WhichDoes _ _ -> cont 39;
+	TokenPosn Neg _ _ -> cont 40;
+	TokenPosn Not _ _ -> cont 41;
+	TokenPosn Plus _ _ -> cont 42;
+	TokenPosn Minus _ _ -> cont 43;
+	TokenPosn Mult _ _ -> cont 44;
+	TokenPosn Div _ _ -> cont 45;
+	TokenPosn Mod _ _ -> cont 46;
+	TokenPosn Lesser _ _ -> cont 47;
+	TokenPosn Greater _ _ -> cont 48;
+	TokenPosn LesserEq _ _ -> cont 49;
+	TokenPosn GreaterEq _ _ -> cont 50;
+	TokenPosn Eq _ _ -> cont 51;
+	TokenPosn Neq _ _ -> cont 52;
+	TokenPosn And _ _ -> cont 53;
+	TokenPosn Or _ _ -> cont 54;
+	TokenPosn Truthy _ _ -> cont 55;
+	TokenPosn Falsy _ _ -> cont 56;
+	TokenPosn (Name happy_dollar_dollar) _ _ -> cont 57;
+	TokenPosn (Integer happy_dollar_dollar) _ _ -> cont 58;
+	TokenPosn (Type "Integer") _ _ -> cont 59;
+	TokenPosn (Type "Boolean") _ _ -> cont 60;
+	TokenPosn Suppose _ _ -> cont 61;
+	TokenPosn ThenWeCanConclude _ _ -> cont 62;
+	TokenPosn RatherThan _ _ -> cont 63;
 	_ -> happyError' ((tk:tks), [])
 	}
 

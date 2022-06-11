@@ -29,6 +29,7 @@ data Expr
 -- behold swag with Integer x which does 1 plus x
 -- summon swag with 5
 -- EApp "swag" [EValue (VInteger 5)]
+-- put that behold x with Integer z which does z plus 1 and this y is 2 into x plus y
 {-
 :> behold swag with Integer x which does 1 plus x
 > summon swag with 5

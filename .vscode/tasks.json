@@ -43,25 +43,6 @@
       "type": "shell",
       "label": "haskell watch",
       "command": "stack build --test --no-run-tests --file-watch"
-    },
-    {
-      "label": "ghci",
-      "type": "shell",
-      "command": "",
-      "options": {
-        "shell": {
-          "executable": "ghci.exe",
-          "args": []
-        }
-      },
-      "isBackground": true,
-      "problemMatcher": [],
-      "presentation": {
-        "group": "mongroupe"
-      },
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
     }
   ]
 }

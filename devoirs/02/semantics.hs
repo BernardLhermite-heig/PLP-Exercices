@@ -30,17 +30,15 @@ typeofDef def@(Definition id args expr) env = typeofExpr expr env'
   where
     env' = addToEnv def env
 
-typeofApp :: Identifier -> [Expr] -> TEnv -> Type
-typeofApp id args env =
+
+typeofExpr :: Expr -> TEnv -> Type
+typeofExpr (EApp id args) env = 
   case lookup id env of
     Just (TFunction t args') ->
       if (length args == length args') && all (\(t, a) -> t == typeofExpr a env) (zip args' args)
         then t
         else error "Type error: params of function invalid"
     _ -> error "Type error: call to unknown function"
-
-typeofExpr :: Expr -> TEnv -> Type
-typeofExpr (EApp id exprs) env = getType id env --error "not implemented"
 typeofExpr (EIf x y z) env =
   case (typeofExpr x env, t1, t2) of
     (TBool, t1, t2) | t1 == t2 -> t1

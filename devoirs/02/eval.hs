@@ -44,7 +44,7 @@ evalExpr e@(EApp id exprs) env = case value id env of
     where
       env' = zipWith matchArg exprs args ++ env
       matchArg expr (Arg t id) -- TODO type auto?
-        | tVal == t = (id, val)
+        -- | tVal == t = (id, val)
         | otherwise = error ("type mismatch: excepted " ++ show t ++ ", actual " ++ show tVal)
         where
           val = evalExpr expr env

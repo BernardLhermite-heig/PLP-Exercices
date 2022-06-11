@@ -5,14 +5,17 @@ import Language
 
 type TEnv = [(Identifier, Type)]
 
+emptyTEnv :: TEnv
+emptyTEnv = []
+
 getType :: Identifier -> TEnv -> Type
 getType x env = case lookup x env of
   Just t -> t
   Nothing -> throwError $ "identifier " ++ x ++ " not found"
 
-typeof :: Stmt -> TEnv -> Type
+typeof :: Stmt -> TEnv -> (Type, TEnv)
 typeof (Def def) env = typeofDef def env
-typeof (Expr expr) env = typeofExpr expr env
+typeof (Expr expr) env = (typeofExpr expr env, env)
 
 addToEnv :: Definition -> TEnv -> TEnv
 addToEnv (Definition id [] expr) env = (id, typeofExpr expr env) : env -- Variables
@@ -25,14 +28,13 @@ addToEnv (Definition id args expr) env = (id, TFunction (typeofExpr expr env') a
 addAllToEnv :: [Definition] -> TEnv -> TEnv
 addAllToEnv defs env = foldr addToEnv env defs
 
-typeofDef :: Definition -> TEnv -> Type
-typeofDef def@(Definition id args expr) env = typeofExpr expr env'
+typeofDef :: Definition -> TEnv -> (Type, TEnv)
+typeofDef def@(Definition id args expr) env = (typeofExpr expr env', env')
   where
     env' = addToEnv def env
 
-
 typeofExpr :: Expr -> TEnv -> Type
-typeofExpr (EApp id args) env = 
+typeofExpr (EApp id args) env =
   case lookup id env of
     Just (TFunction t args') ->
       if (length args == length args') && all (\(t, a) -> t == typeofExpr a env) (zip args' args)

@@ -7,7 +7,7 @@ import Semantics
 import System.Exit (exitSuccess)
 import System.IO
 
-data Move = ValidMove Env | InvalidMove Env String
+data Move = ValidMove TEnv Env | InvalidMove TEnv Env String
 
 main :: IO ()
 main =
@@ -15,7 +15,7 @@ main =
     help
     repl initEnv
 
-initEnv = ValidMove emptyEnv
+initEnv = ValidMove emptyTEnv emptyEnv
 
 help :: IO ()
 help = do
@@ -30,15 +30,15 @@ quit :: IO ()
 quit = exitSuccess
 
 repl :: Move -> IO ()
-repl (InvalidMove oldEnv msg) = putStrLn msg >> repl (ValidMove oldEnv)
-repl (ValidMove env) =
+repl (InvalidMove oldTEnv oldEnv msg) = putStrLn msg >> repl (ValidMove oldTEnv oldEnv)
+repl (ValidMove tEnv env) =
   do
     putStr "> "
     hFlush stdout
     cmd <- getLine
     case parseCmd cmd of
       Left move -> repl move
-      Right msg -> msg >> repl (ValidMove env)
+      Right msg -> msg >> repl (ValidMove tEnv env)
   where
     parseCmd (':' : cmd : rest) =
       case cmd of
@@ -46,20 +46,24 @@ repl (ValidMove env) =
         '}' -> error "}"
         'r' -> Left initEnv
         't' -> case rest of
-          (' ' : arg) -> Right $ tryTypeOf arg
-          _ -> Left $ InvalidMove env "Missing argument <expr>"
-        'e' -> Right $ print env
+          (' ' : arg) -> Right $ tryTypeOf arg tEnv
+          _ -> Left $ InvalidMove tEnv env "Missing argument <expr>"
+        'e' -> Right $ print tEnv >> print env
         'h' -> Right help
         'q' -> Right quit
-        _ -> Left $ InvalidMove env unknownCommand
-    parseCmd stmt = case eval (parseStmt stmt) env of
-      Left env' -> Left $ ValidMove env'
-      Right val -> Right $ print val
+        _ -> Left $ InvalidMove tEnv env unknownCommand
+    parseCmd str = g
+      where
+        stmt = parseStmt str
+        (t, newTEnv) = typeof stmt tEnv
+        g = case eval stmt env of
+          Left env' -> Left $ ValidMove newTEnv env'
+          Right val -> Right $ print val
     unknownCommand = "Unknown command"
 
 parseStmt stmt = parser $ lexer stmt
 
-tryTypeOf str = catch (print (typeof (parseStmt str) [])) handler
+tryTypeOf str tEnv = catch (print $ fst (typeof (parseStmt str) tEnv)) handler
 
 handler :: SomeException -> IO ()
 handler e = putStrLn $ "Error: " ++ show e

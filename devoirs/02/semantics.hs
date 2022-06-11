@@ -2,7 +2,6 @@
 module Semantics where
 
 import Language
-import Data.List (find)
 
 type TEnv = [(Identifier, Type)]
 
@@ -66,16 +65,12 @@ typeofLet defs expr env = typeofExpr expr env'
 typeofVar = getType
 
 typeofCaseOf expr cases env =
-  if any (\(c, e) -> (c /= caseType && c /= TAny) || e /= exprType) caseTypes
+  if any (\(c, e) -> (c /= condType && c /= TAny) || e /= exprType) caseTypes
     then throwError "case types do not match"
     else exprType
   where
     condType = typeofExpr expr env -- Augmenter env de expr si PVar
     caseTypes = map f cases
-    -- find first type that is not TAny
-    caseType = case find (\(c, e) -> c /= TAny) caseTypes of
-      Just (c, e) -> c
-      Nothing -> TAny
     exprType = snd $ head caseTypes
     f (PVar id, expr) = (condType, typeofExpr expr ((id, condType) : env))
     f (pattern, expr) = (typeofPattern pattern env, typeofExpr expr env)

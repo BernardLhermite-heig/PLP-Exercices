@@ -6,6 +6,7 @@ import Semantics
 emptyEnv :: Env
 emptyEnv = []
 
+--TODO div 0
 value :: Identifier -> Env -> Value
 value id env = case lookup id env of
   Nothing -> error ("undefined variable: " ++ id)
@@ -44,11 +45,11 @@ evalExpr e@(EApp id exprs) env = case value id env of
     where
       env' = zipWith matchArg exprs args ++ env
       matchArg expr (Arg t id) -- TODO type auto?
-        -- | tVal == t = (id, val)
+        | tVal == t = (id, val)
         | otherwise = error ("type mismatch: excepted " ++ show t ++ ", actual " ++ show tVal)
         where
           val = evalExpr expr env
-          tVal = typeof (Expr $ EValue val) []
+          (tVal, _) = typeof (Expr $ EValue val) []
   val -> val
 evalExpr (ELet defs expr) env = evalExpr expr env'
   where

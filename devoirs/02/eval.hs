@@ -82,7 +82,7 @@ evalExpr (EBinary (Operator opType op) lhs rhs) env =
           (VTuple l1 r1, VTuple l2 r2) -> evalExpr (EBinary (Operator opType op) (EValue v1) (EValue v2)) env
             where
               v1 = evalExpr (EBinary (Operator opType op) l1 l2) env
-              v2 = evalExpr (EBinary (Operator opType op) l2 r2) env
+              v2 = evalExpr (EBinary (Operator opType op) r1 r2) env
           _ -> error "runtime error: integer or boolean expected"
         "<" -> case (v1, v2) of
           (VInteger i1, VInteger i2) -> VBool (i1 < i2)
@@ -103,6 +103,7 @@ evalExpr (EBinary (Operator opType op) lhs rhs) env =
           (VBool b1, VBool b2) -> VBool (b1 || b2)
           _ -> error "runtime error: boolean expected"
         _ -> error $ "runtime error: unknown operator " ++ op
+evalExpr (EIf cond thenExpr elseExpr) env = error "not implemented"
 
 toComp "==" = (==)
 toComp "!=" = (/=)
@@ -131,6 +132,7 @@ y = 4
 x =
   let y = 3
    in case 3 * 3 of
+        _ -> ""
         3 -> "six"
         y -> "not six"
         z -> "not six6"

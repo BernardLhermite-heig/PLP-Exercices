@@ -2,6 +2,7 @@
 module Semantics where
 
 import Language
+import Data.List (find)
 
 type TEnv = [(Identifier, Type)]
 
@@ -71,7 +72,10 @@ typeofCaseOf expr cases env =
   where
     condType = typeofExpr expr env -- Augmenter env de expr si PVar
     caseTypes = map f cases
-    caseType = fst $ head caseTypes -- si TAny premier type
+    -- find first type that is not TAny
+    caseType = case find (\(c, e) -> c /= TAny) caseTypes of
+      Just (c, e) -> c
+      Nothing -> TAny
     exprType = snd $ head caseTypes
     f (PVar id, expr) = (condType, typeofExpr expr ((id, condType) : env))
     f (pattern, expr) = (typeofPattern pattern env, typeofExpr expr env)

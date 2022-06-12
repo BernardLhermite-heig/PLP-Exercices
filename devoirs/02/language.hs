@@ -63,7 +63,8 @@ data Value
   = VBool Bool
   | VInteger Int
   | VTuple Expr Expr
-  | VFunction Expr [Arg] Env
+  | VFunction Expr [Arg] Env -- TODO [Identifier] ?
+  deriving (Show)
 
 data Type
   = TBool
@@ -71,19 +72,19 @@ data Type
   | TTuple Type Type
   | TFunction Type [Type]
   | TAny
-  deriving (Eq)
+  deriving (Eq, Show)
 
-instance Show Value where
-  show (VBool b) = show b
-  show (VInteger i) = show i
-  show (VTuple e1 e2) = "(" ++ show e1 ++ "," ++ show e2 ++ ")"
-  show (VFunction e args env) = splitWithArrow e args
+-- instance Show Value where
+--   show (VBool b) = show b
+--   show (VInteger i) = show i
+--   show (VTuple e1 e2) = "(" ++ show e1 ++ "," ++ show e2 ++ ")"
+--   show (VFunction e args env) = splitWithArrow e args
 
-instance Show Type where
-  show TBool = "Boolean"
-  show TInteger = "Integer"
-  show (TTuple t1 t2) = "(" ++ show t1 ++ "," ++ show t2 ++ ")"
-  show (TFunction t1 ts) = splitWithArrow t1 ts
-  show TAny = "Any"
+-- instance Show Type where
+--   show TBool = "Boolean"
+--   show TInteger = "Integer"
+--   show (TTuple t1 t2) = "(" ++ show t1 ++ "," ++ show t2 ++ ")"
+--   show (TFunction t1 ts) = splitWithArrow t1 ts
+--   show TAny = "Any"
 
 splitWithArrow y xs = foldl (\acc t -> show t ++ " -> " ++ acc) "" xs ++ show y

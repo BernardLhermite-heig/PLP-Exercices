@@ -14,12 +14,6 @@ typeofDef def@(Definition id args expr) env = (getType id env', env')
   where
     env' = addToEnv def env
 
--- typeofDef :: Definition -> TEnv -> (Type, TEnv)
--- typeofDef (Definition id [] expr) env = (typeofExpr expr env, env)
--- typeofDef (Definition id ((Arg type' name) : args) body) env = typeofDef (Definition id args body) env'
---   where
---     env' = (name, type') : env
-
 addToEnv :: Definition -> TEnv -> TEnv
 addToEnv (Definition id [] expr) env = (id, typeofExpr expr env) : env -- Variables
 addToEnv (Definition id args expr) env = (id, TFunction (typeofExpr expr env') args') : env -- Fonctions

@@ -15,9 +15,8 @@ eval (Def def) env = Left $ evalDef def env
 eval (Expr expr) env = Right $ evalExpr expr env
 
 evalDef :: Definition -> Env -> Env
-evalDef (Definition id args expr) env = case args of
-  [] -> (id, evalExpr expr env) : env -- Variable / Function sans paramètres
-  _ -> (id, VFunction expr args env) : env -- Function avec paramètres
+evalDef (Definition id [] expr) env = (id, evalExpr expr env) : env -- Variable / Function sans paramètres
+evalDef (Definition id args expr) env = (id, VFunction expr args env) : env -- Function avec paramètres
 
 evalExpr :: Expr -> Env -> Value
 evalExpr e@(EApp id exprs) env = evalApp id exprs env

@@ -57,28 +57,28 @@ data Arg = Arg Type Identifier
 instance Eq Arg where
   (==) (Arg t1 _) (Arg t2 _) = t1 == t2
 
---todo tuple de N
 data Value
   = VBool Bool
   | VInteger Int
   | VTuple Expr Expr
   | VFunction Expr [Arg] Env
 
-data Type 
-  = TBool 
-  | TInteger 
-  | TTuple Type Type 
-  | TFunction Type [Type] 
+data Type
+  = TBool
+  | TInteger
+  | TTuple Type Type
+  | TFunction Type [Type]
   | TAny
   deriving (Eq)
 
-instance Show Value where 
+instance Show Value where
   show (VBool b) = show b
   show (VInteger i) = show i
   show (VTuple e1 e2) = "(" ++ show e1 ++ "," ++ show e2 ++ ")"
   show (VFunction e args env) = splitWithArrow e args
+
 instance Show Type where
-  show TBool = "Bool"
+  show TBool = "Boolean"
   show TInteger = "Integer"
   show (TTuple t1 t2) = "(" ++ show t1 ++ "," ++ show t2 ++ ")"
   show (TFunction t1 ts) = splitWithArrow t1 ts

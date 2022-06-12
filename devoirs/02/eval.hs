@@ -1,7 +1,6 @@
 module Eval (eval, emptyEnv, Env) where
 
 import Language
-import Semantics hiding (throwError)
 
 emptyEnv :: Env
 emptyEnv = []

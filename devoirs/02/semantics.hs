@@ -1,5 +1,4 @@
---module Semantics (typeof) where
-module Semantics where
+module Semantics (typeof, emptyTEnv, TEnv) where
 
 import Language
 

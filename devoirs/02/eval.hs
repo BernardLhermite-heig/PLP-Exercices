@@ -21,7 +21,20 @@ evalDef (Definition id args expr) env = case args of
   _ -> (id, VFunction expr args env) : env -- Function avec paramètres
 
 evalExpr :: Expr -> Env -> Value
-evalExpr e@(EApp id exprs) env = case getValue id env of
+evalExpr e@(EApp id exprs) env = evalApp id exprs env
+evalExpr (ELet defs expr) env = evalLet defs expr env
+evalExpr (EVar id) env = getValue id env
+evalExpr (EValue value) env = value
+evalExpr (ECaseOf expr patterns) env = evalCaseOf expr patterns env
+evalExpr (EUnary (Operator opType op) expr) env = evalUnary opType op expr env
+evalExpr (EBinary (Operator opType op) lhs rhs) env = evalBinary opType op lhs rhs env
+evalExpr (EIf cond thenExpr elseExpr) env = error "not implemented"
+
+evalLet defs expr env = evalExpr expr env'
+  where
+    env' = foldr evalDef env defs
+
+evalApp id exprs env = case getValue id env of
   VFunction expr args env' -> case exprs of -- TODO fix les tuples
     [] -> evalExpr expr env
     _ -> evalExpr expr env'
@@ -34,31 +47,27 @@ evalExpr e@(EApp id exprs) env = case getValue id env of
           val = evalExpr expr env
           (tVal, _) = typeof (Expr $ EValue val) []
   val -> val
-evalExpr (ELet defs expr) env = evalExpr expr env'
-  where
-    env' = foldr evalDef env defs
-evalExpr (EVar id) env = getValue id env
-evalExpr (EValue value) env = value
-evalExpr (ECaseOf expr patterns) env = evalCaseOf expr patterns env
-evalExpr (EUnary (Operator _ op) expr) env =
+
+evalUnary _ op expr env =
   case op of
     "-" -> case evalExpr expr env of
       (VInteger i) -> VInteger (- i)
-      _ -> error "runtime error: integer expected"
+      _ -> throwError "integer expected"
     "!" -> case evalExpr expr env of
       VBool b -> VBool (not b)
-      _ -> error "runtime error: boolean expected"
-    _ -> error $ "runtime error: unknown operator " ++ op
-evalExpr (EBinary (Operator opType op) lhs rhs) env =
+      _ -> throwError "boolean expected"
+    _ -> throwError $ "unknown operator " ++ op
+
+evalBinary opType op lhs rhs env =
   let v1 = evalExpr lhs env
       v2 = evalExpr rhs env
    in case op of
         op | op `elem` ["+", "-", "*", "/"] -> case (v1, v2) of
           (VInteger i1, VInteger i2) ->
             if op == "/" && i2 == 0
-              then throwError "divide by zero"
+              then throwError "divison by zero"
               else VInteger (toArithm op i1 i2)
-          _ -> error "runtime error: integer expected"
+          _ -> throwError $ show op ++ " operator applied to non-integer"
         op | op == "==" || op == "!=" -> case (v1, v2) of
           (VInteger i1, VInteger i2) -> VBool (toComp op i1 i2)
           (VBool b1, VBool b2) -> VBool (b1 == b2)
@@ -66,15 +75,14 @@ evalExpr (EBinary (Operator opType op) lhs rhs) env =
             where
               v1 = evalExpr (EBinary (Operator opType op) l1 l2) env
               v2 = evalExpr (EBinary (Operator opType op) r1 r2) env
-          _ -> error "runtime error: integer or boolean expected"
+          _ -> throwError $ op ++ " operator applied to non-comparable"
         op | op `elem` ["<", ">", "<=", ">="] -> case (v1, v2) of
           (VInteger i1, VInteger i2) -> VBool (toComp op i1 i2)
-          _ -> error "runtime error: integer expected"
+          _ -> throwError $ op ++ " operator applied to non-integer"
         op | op `elem` ["&&", "||"] -> case (v1, v2) of
           (VBool b1, VBool b2) -> VBool (toLogic op b1 b2)
-          _ -> error "runtime error: boolean expected"
-        _ -> error $ "runtime error: unknown operator " ++ op
-evalExpr (EIf cond thenExpr elseExpr) env = error "not implemented"
+          _ -> throwError $ op ++ " operator applied to non-boolean"
+        _ -> throwError $ "unknown operator " ++ op
 
 areValueEqual :: Value -> Value -> Env -> Bool
 areValueEqual (VBool a) (VBool b) _ = a == b
@@ -106,22 +114,23 @@ evalCaseOf expr cases env = case matchingCases of
 
 toComp "==" = (==)
 toComp "!=" = (/=)
-toComp _ = error "runtime error: unknown operator"
+toComp op = throwError $ "unknown operator " ++ op
 
 toLogic "&&" = (&&)
 toLogic "||" = (||)
-toLogic _ = error "runtime error: unknown operator"
+
+toLogicop = throwError $ "unknown operator " ++ op
 
 toRel ">" = (>)
 toRel "<" = (<)
 toRel ">=" = (>=)
 toRel "<=" = (<=)
-toRel _ = error "runtime error: unknown operator"
+toRel op = throwError $ "unknown operator " ++ op
 
 toArithm "-" = (-)
 toArithm "+" = (+)
 toArithm "*" = (*)
 toArithm "/" = div
-toArithm _ = error "runtime error: unknown operator"
+toArithm op = throwError $ "unknown operator " ++ op
 
 throwError msg = error ("runtime error: " ++ msg ++ " ")

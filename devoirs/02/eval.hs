@@ -28,7 +28,12 @@ evalExpr (EValue value) env = value
 evalExpr (ECaseOf expr patterns) env = evalCaseOf expr patterns env
 evalExpr (EUnary (Operator opType op) expr) env = evalUnary opType op expr env
 evalExpr (EBinary (Operator opType op) lhs rhs) env = evalBinary opType op lhs rhs env
-evalExpr (EIf cond thenExpr elseExpr) env = error "not implemented"
+evalExpr (EIf cond thenExpr elseExpr) env = evalIf cond thenExpr elseExpr env
+
+evalIf cond thenExpr elseExpr env = case evalExpr cond env of
+  VBool True -> evalExpr thenExpr env
+  VBool False -> evalExpr elseExpr env
+  _ -> throwError "if condition must be a boolean"
 
 evalLet defs expr env = evalExpr expr env'
   where

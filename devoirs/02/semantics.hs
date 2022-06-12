@@ -2,8 +2,6 @@ module Semantics (typeof, emptyTEnv, TEnv) where
 
 import Language
 
-type TEnv = [(Identifier, Type)]
-
 emptyTEnv :: TEnv
 emptyTEnv = []
 

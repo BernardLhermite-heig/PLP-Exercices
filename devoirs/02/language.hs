@@ -9,6 +9,8 @@ type Identifier = String
 
 type Env = [(Identifier, Value)]
 
+type TEnv = [(Identifier, Type)]
+
 data Stmt
   = Def Definition
   | Expr Expr

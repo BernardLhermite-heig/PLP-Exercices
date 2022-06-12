@@ -1,5 +1,7 @@
-import Control.Exception (Exception, SomeException, catch)
+import Control.Exception (SomeException (SomeException), catch, evaluate, try)
 import Eval
+import GHC.Base (seq)
+import GHC.Conc (pseq)
 import Language
 import Lexer
 import Parser
@@ -7,7 +9,7 @@ import Semantics
 import System.Exit (exitSuccess)
 import System.IO
 
-data Move = ValidMove TEnv Env | InvalidMove TEnv Env String
+data State = ValidState TEnv Env | InvalidState TEnv Env String
 
 main :: IO ()
 main =
@@ -15,7 +17,7 @@ main =
     help
     repl initEnv
 
-initEnv = ValidMove emptyTEnv emptyEnv
+initEnv = ValidState emptyTEnv emptyEnv
 
 help :: IO ()
 help = do
@@ -29,41 +31,41 @@ help = do
 quit :: IO ()
 quit = exitSuccess
 
-repl :: Move -> IO ()
-repl (InvalidMove oldTEnv oldEnv msg) = putStrLn msg >> repl (ValidMove oldTEnv oldEnv)
-repl (ValidMove tEnv env) =
+repl :: State -> IO ()
+repl (InvalidState oldTEnv oldEnv msg) = putStrLn msg >> repl (ValidState oldTEnv oldEnv)
+repl state@(ValidState tEnv env) =
   do
     putStr "> "
     hFlush stdout
-    cmd <- getLine
-    case parseCmd cmd of
-      Left move -> repl move
-      Right msg -> msg >> repl (ValidMove tEnv env)
-  where
-    parseCmd (':' : cmd : rest) =
-      case cmd of
-        '{' -> error "{" --Right $ print state
-        '}' -> error "}"
-        'r' -> Left initEnv
-        't' -> case rest of
-          (' ' : arg) -> Right $ tryTypeOf arg tEnv
-          _ -> Left $ InvalidMove tEnv env "Missing argument <expr>"
-        'e' -> Right $ print tEnv >> print env
-        'h' -> Right help
-        'q' -> Right quit
-        _ -> Left $ InvalidMove tEnv env unknownCommand
-    parseCmd str = g
-      where
-        stmt = parseStmt str
-        (t, newTEnv) = typeof stmt tEnv
-        g = case eval stmt env of
-          Left env' -> Left $ ValidMove newTEnv env'
-          Right val -> Right $ print val
-    unknownCommand = "Unknown command"
+    line <- getLine
+    case line of
+      (':' : cmd : rest) ->
+        case cmd of
+          '{' -> error "{" --Right $ print state
+          '}' -> error "}"
+          'r' -> repl initEnv
+          't' -> case rest of
+            (' ' : arg) -> tryTypeOf arg tEnv >> repl state
+            _ -> repl $ InvalidState tEnv env "Missing argument <expr>"
+          'e' -> print tEnv >> print env >> repl state
+          'h' -> help >> repl state
+          'q' -> quit
+          _ -> repl $ InvalidState tEnv env "Unknown command"
+      [] -> repl state
+      _ -> do
+        catch
+          ( do
+              stmt <- evaluate $ parseStmt line
+              semanticAnal@(_, newTEnv) <- evaluate $ typeof stmt tEnv
+              case newTEnv `seq` eval stmt env of
+                Left env' -> repl $ ValidState newTEnv env'
+                Right val -> print val >> repl state
+          )
+          handler >> repl state
 
 parseStmt stmt = parser $ lexer stmt
 
 tryTypeOf str tEnv = catch (print $ fst (typeof (parseStmt str) tEnv)) handler
 
 handler :: SomeException -> IO ()
-handler e = putStrLn $ "Error: " ++ show e
+handler = print

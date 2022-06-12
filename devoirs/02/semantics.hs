@@ -45,11 +45,18 @@ typeofExpr (EBinary (Operator opType op) lhs rhs) env = typeofBinary opType op l
 
 typeofApp id args env = case lookup id env of
   Just (TFunction t args') ->
-    if (length args == length args') && all (\(t, a) -> t == typeofExpr a env) (zip args' args)
-      then t
-      else throwError "params of function invalid"
+    maybe t throwError (hasArgsError args' args)
   Just t -> t
   Nothing -> throwError "call to unknown function"
+  where
+    hasArgsError [] [] = Nothing
+    hasArgsError (e : excepteds) (a : actuals) =
+      if e == aType
+        then hasArgsError excepteds actuals
+        else Just $ "wrong type of argument in application of function " ++ id ++ ": expected " ++ show e ++ " got " ++ show aType
+      where
+        aType = typeofExpr a env
+    hasArgsError _ _ = Just $ "wrong number of arguments in application of function " ++ id
 
 typeofIf x y z env = case (typeofExpr x env, t1, t2) of
   (TBool, t1, t2) | t1 == t2 -> t1

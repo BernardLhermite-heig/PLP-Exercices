@@ -45,12 +45,7 @@ evalApp id exprs env = case getValue id env of
     _ -> evalExpr expr env'
     where
       env' = zipWith matchArg exprs args ++ env
-      matchArg expr (Arg t id) -- TODO type auto?
-        | tVal == t = (id, val)
-        | otherwise = error ("type mismatch: excepted " ++ show t ++ ", actual " ++ show tVal)
-        where
-          val = evalExpr expr env
-          (tVal, _) = typeof (Expr $ EValue val) []
+      matchArg expr (Arg t id) = (id, evalExpr expr env)
   val -> val
 
 evalUnary _ op expr env =
@@ -123,8 +118,7 @@ toComp op = throwError $ "unknown operator " ++ op
 
 toLogic "&&" = (&&)
 toLogic "||" = (||)
-
-toLogicop = throwError $ "unknown operator " ++ op
+toLogic op = throwError $ "unknown operator " ++ op
 
 toRel ">" = (>)
 toRel "<" = (<)

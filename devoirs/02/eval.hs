@@ -20,34 +20,6 @@ evalDef (Definition id args expr) env = case args of
   [] -> (id, evalExpr expr env) : env -- Variable / Function sans paramètres
   _ -> (id, VFunction expr args env) : env -- Function avec paramètres
 
-areValueEqual :: Value -> Value -> Env -> Bool
-areValueEqual (VBool a) (VBool b) _ = a == b
-areValueEqual (VInteger a) (VInteger b) _ = a == b
-areValueEqual (VTuple l1 r1) (VTuple l2 r2) env = l && r
-  where
-    l = areValueEqual (evalExpr l1 env) (evalExpr l1 env) env
-    r = areValueEqual (evalExpr r1 env) (evalExpr r2 env) env
-areValueEqual _ _ _ = False
-
-matchPattern :: Pattern -> Value -> Env -> Bool
-matchPattern pattern cond env = case pattern of
-  PVar id -> case lookup id env of
-    Nothing -> False
-    Just v -> True
-  PValue val | areValueEqual val cond env -> True
-  PAny -> True
-  _ -> False
-
-evalCaseOf expr cases env = case matchingCases of
-  [] -> throwError $ "no matching case for: " ++ show expr
-  _ -> evalExpr body (localEnv ++ env)
-    where
-      (_, body) = head matchingCases
-  where
-    cond = evalExpr expr env
-    localEnv = [(id, cond) | (PVar id, _) <- cases]
-    matchingCases = filter (\(p, _) -> matchPattern p cond localEnv) cases
-
 evalExpr :: Expr -> Env -> Value
 evalExpr e@(EApp id exprs) env = case getValue id env of
   VFunction expr args env' -> case exprs of -- TODO fix les tuples
@@ -103,6 +75,34 @@ evalExpr (EBinary (Operator opType op) lhs rhs) env =
           _ -> error "runtime error: boolean expected"
         _ -> error $ "runtime error: unknown operator " ++ op
 evalExpr (EIf cond thenExpr elseExpr) env = error "not implemented"
+
+areValueEqual :: Value -> Value -> Env -> Bool
+areValueEqual (VBool a) (VBool b) _ = a == b
+areValueEqual (VInteger a) (VInteger b) _ = a == b
+areValueEqual (VTuple l1 r1) (VTuple l2 r2) env = l && r
+  where
+    l = areValueEqual (evalExpr l1 env) (evalExpr l1 env) env
+    r = areValueEqual (evalExpr r1 env) (evalExpr r2 env) env
+areValueEqual _ _ _ = False
+
+matchPattern :: Pattern -> Value -> Env -> Bool
+matchPattern pattern cond env = case pattern of
+  PVar id -> case lookup id env of
+    Nothing -> False
+    Just v -> True
+  PValue val | areValueEqual val cond env -> True
+  PAny -> True
+  _ -> False
+
+evalCaseOf expr cases env = case matchingCases of
+  [] -> throwError $ "no matching case for: " ++ show expr
+  _ -> evalExpr body (localEnv ++ env)
+    where
+      (_, body) = head matchingCases
+  where
+    cond = evalExpr expr env
+    localEnv = [(id, cond) | (PVar id, _) <- cases]
+    matchingCases = filter (\(p, _) -> matchPattern p cond localEnv) cases
 
 toComp "==" = (==)
 toComp "!=" = (/=)

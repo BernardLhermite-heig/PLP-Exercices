@@ -1,5 +1,7 @@
 module Language where
 
+import Data.List
+
 -- Expr (ELet [Definition "y" [] (EValue (VBool True)),Definition "x" [] (EValue (VInteger 5))] (EVar "y"))
 -- Def (Definition "swag" [Arg TBool "y",Arg TInteger "x"] (EVar "x"))
 -- Expr (EValue (VTuple (EValue (VInteger 5)) (EValue (VBool True))))
@@ -12,7 +14,8 @@ data Stmt
   | Expr Expr
   deriving (Show)
 
-data Definition = Definition Identifier [Arg] Expr
+data Definition
+  = Definition Identifier [Arg] Expr
   deriving (Show)
 
 data Expr
@@ -60,7 +63,25 @@ data Value
   | VInteger Int
   | VTuple Expr Expr
   | VFunction Expr [Arg] Env
-  deriving (Show)
 
-data Type = TBool | TInteger | TTuple Type Type | TFunction Type [Type] | TAny
-  deriving (Show, Eq)
+data Type 
+  = TBool 
+  | TInteger 
+  | TTuple Type Type 
+  | TFunction Type [Type] 
+  | TAny
+  deriving (Eq)
+
+instance Show Value where 
+  show (VBool b) = show b
+  show (VInteger i) = show i
+  show (VTuple e1 e2) = "(" ++ show e1 ++ "," ++ show e2 ++ ")"
+  show (VFunction e args env) = splitWithArrow e args
+instance Show Type where
+  show TBool = "Bool"
+  show TInteger = "Integer"
+  show (TTuple t1 t2) = "(" ++ show t1 ++ "," ++ show t2 ++ ")"
+  show (TFunction t1 ts) = splitWithArrow t1 ts
+  show TAny = "Any"
+
+splitWithArrow y xs = foldl (\acc t -> show t ++ " -> " ++ acc) "" xs ++ show y

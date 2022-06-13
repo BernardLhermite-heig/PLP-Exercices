@@ -10,7 +10,7 @@ import System.Exit (exitSuccess)
 import System.IO
 import Text.Printf (printf)
 
-data State = ValidState TEnv Env | InvalidState TEnv Env String | QuitState deriving (Show)
+data State = StandardState TEnv Env | MessageState TEnv Env String | QuitState
 
 main :: IO ()
 main =
@@ -18,7 +18,7 @@ main =
     putStrLn help
     repl initEnv
 
-initEnv = ValidState emptyTEnv emptyEnv
+initEnv = StandardState emptyTEnv emptyEnv
 
 help =
   ":{ activer l'édition multi-ligne (:} pour la désactiver)"
@@ -33,8 +33,11 @@ quit = exitSuccess
 
 repl :: State -> IO ()
 repl QuitState = quit
-repl (InvalidState oldTEnv oldEnv msg) = catch (putStrLn msg) handler >> repl (ValidState oldTEnv oldEnv)
-repl state@(ValidState tEnv env) =
+repl (MessageState oldTEnv oldEnv msg) = catch (putStrLn msg) handler >> repl (StandardState oldTEnv oldEnv)
+  where
+    handler :: SomeException -> IO ()
+    handler = print
+repl state@(StandardState tEnv env) =
   do
     putStr "> "
     hFlush stdout
@@ -43,24 +46,23 @@ repl state@(ValidState tEnv env) =
       (':' : cmd : rest) -> repl $ parseCmd cmd rest tEnv env state
       [] -> repl state
       _ -> do
-        t <- parseStmt' line tEnv env
+        t <- evalLine line tEnv env
         repl t
 
-parseStmt' line tEnv env =
+evalLine line tEnv env =
   catch
     ( do
-        stmt <- evaluate $ parser $ lexer line
+        stmt <- evaluate $ parseLine line
         sem@(t, tEnv') <- evaluate $ typeof stmt tEnv
         let tEnv'' = if t == TAny then tEnv' else tEnv'
-        putStrLn "test"
         case tEnv'' `seq` eval stmt env of
-          Left env' -> return $ ValidState tEnv'' env'
-          Right value -> return $ InvalidState tEnv env (show value)
+          Left env' -> return $ StandardState tEnv'' env'
+          Right value -> return $ MessageState tEnv env (show value)
     )
     handler
   where
     handler :: SomeException -> IO State
-    handler e = return $ InvalidState tEnv env (show e)
+    handler e = return $ MessageState tEnv env (show e)
 
 parseCmd cmd rest tEnv env state =
   case cmd of
@@ -68,14 +70,11 @@ parseCmd cmd rest tEnv env state =
     '}' -> error "}"
     'r' -> state
     't' -> case rest of
-      (' ' : arg) -> InvalidState tEnv env (show $ typeof (parseStmt arg) tEnv)
-      _ -> InvalidState tEnv env "Missing argument <expr>"
-    'e' -> InvalidState tEnv env (show tEnv ++ show env)
-    'h' -> InvalidState tEnv env help
+      (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv)
+      _ -> MessageState tEnv env "Missing argument <expr>"
+    'e' -> MessageState tEnv env (show tEnv ++ show env)
+    'h' -> MessageState tEnv env help
     'q' -> QuitState
-    _ -> InvalidState tEnv env "Unknown command"
+    _ -> MessageState tEnv env "Unknown command"
 
-parseStmt stmt = parser $ lexer stmt
-
-handler :: SomeException -> IO ()
-handler = print
+parseLine line = parser $ lexer line

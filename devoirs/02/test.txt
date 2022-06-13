@@ -1,0 +1,6 @@
+this x is 5
+x plus 5
+behold f with Integer x which does x times 2
+summon f with x
+10 plus yep
+5 plus yep

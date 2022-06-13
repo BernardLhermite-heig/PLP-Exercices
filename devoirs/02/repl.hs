@@ -8,64 +8,106 @@ import Parser
 import Semantics
 import System.Exit (exitSuccess)
 import System.IO
+import Text.Printf (printf)
 
-data State = ValidState TEnv Env | InvalidState TEnv Env String
+data State = ValidState TEnv Env | InvalidState TEnv Env String | QuitState deriving (Show)
 
 main :: IO ()
 main =
   do
-    help
+    putStrLn help
     repl initEnv
 
 initEnv = ValidState emptyTEnv emptyEnv
 
-help :: IO ()
-help = do
-  putStrLn ":{ activer l'édition multi-ligne (:} pour la désactiver)"
-  putStrLn ":r réinitialiser l'état de l'interpréteur"
-  putStrLn ":t <expr> afficher le type d'une expression"
-  putStrLn ":e afficher l'environnement"
-  putStrLn ":h afficher l'aide"
-  putStrLn ":q quitter le programme"
+help =
+  ":{ activer l'édition multi-ligne (:} pour la désactiver)"
+    ++ "\n:r réinitialiser l'état de l'interpréteur"
+    ++ "\n:t <expr> afficher le type d'une expression"
+    ++ "\n:e afficher l'environnement"
+    ++ "\n:h afficher l'aide"
+    ++ "\n:q quitter le programme"
 
 quit :: IO ()
 quit = exitSuccess
 
 repl :: State -> IO ()
-repl (InvalidState oldTEnv oldEnv msg) = putStrLn msg >> repl (ValidState oldTEnv oldEnv)
+repl QuitState = quit
+repl (InvalidState oldTEnv oldEnv msg) = error "s" -- print msg >> repl (ValidState oldTEnv oldEnv)
 repl state@(ValidState tEnv env) =
   do
     putStr "> "
     hFlush stdout
     line <- getLine
     case line of
-      (':' : cmd : rest) ->
-        case cmd of
-          '{' -> error "{" --Right $ print state
-          '}' -> error "}"
-          'r' -> repl initEnv
-          't' -> case rest of
-            (' ' : arg) -> tryTypeOf arg tEnv >> repl state
-            _ -> repl $ InvalidState tEnv env "Missing argument <expr>"
-          'e' -> print tEnv >> print env >> repl state
-          'h' -> help >> repl state
-          'q' -> quit
-          _ -> repl $ InvalidState tEnv env "Unknown command"
+      (':' : cmd : rest) -> repl $ parseCmd cmd rest tEnv env state
       [] -> repl state
       _ -> do
-        catch
-          ( do
-              stmt <- evaluate $ parseStmt line
-              semanticAnal@(_, newTEnv) <- evaluate $ typeof stmt tEnv
-              case newTEnv `seq` eval stmt env of
-                Left env' -> repl $ ValidState newTEnv env'
-                Right val -> print val >> repl state
-          )
-          handler >> repl state
+        tokens <- tryLexer line state
+        case tokens of
+          Left state -> repl state
+          Right tokens -> do
+            ast <- tryParser tokens tEnv env
+            case ast of
+              Left state -> repl state
+              Right ast -> do
+                semantic <- tryTypeOf ast tEnv env
+                case semantic of
+                  Left state -> repl state
+                  Right semantic@(t, tEnv') -> do
+                    final <- tryEval ast tEnv' env
+                    case semantic `seq` final of
+                      Left state -> repl state
+                      Right final -> do
+                        case final of
+                          Left env' -> repl (ValidState tEnv' env')
+                          Right val -> print val >> repl state
+
+tryLexer line state = do
+  tokens <- try (evaluate $ lexer line) :: IO (Either SomeException [TokenPosn])
+  case tokens of
+    Left e -> return $ Left $ InvalidState emptyTEnv emptyEnv (show e)
+    Right tokens -> return $ Right tokens
+
+tryParser tokens tEnv env = do
+  ast <- try (evaluate $ parser tokens) :: IO (Either SomeException Stmt)
+  case ast of
+    Left e -> return $ Left $ InvalidState tEnv env (show e)
+    Right ast -> return $ Right ast
+
+tryTypeOf stmt tEnv env = do
+  semanticAnal <- try (evaluate $ typeof stmt tEnv) :: IO (Either SomeException (Type, TEnv))
+  case semanticAnal of
+    Left e -> return $ Left $ InvalidState tEnv env (show e)
+    Right semanticAnal -> return $ Right semanticAnal
+
+tryEval stmt tEnv env = do
+  eval <- try (evaluate $ eval stmt env) :: IO (Either SomeException (Either Env Value))
+  case eval of
+    Left e -> return $ Left $ InvalidState tEnv env (show e)
+    Right eval -> return $ Right eval
+
+evalStmt line tEnv env = do
+  stmt <- evaluate $ parseStmt line
+  semanticAnal@(_, newTEnv) <- evaluate $ typeof stmt tEnv
+  return $ case newTEnv `seq` eval stmt env of
+    Left env' -> ValidState newTEnv env'
+    Right val -> InvalidState newTEnv env (show val)
+
+parseCmd cmd rest tEnv env state =
+  case cmd of
+    '{' -> error "{" --Right $ print state
+    '}' -> error "}"
+    'r' -> state
+    't' -> case rest of
+      (' ' : arg) -> state
+      _ -> InvalidState tEnv env "Missing argument <expr>"
+    'e' -> InvalidState tEnv env (show tEnv ++ show env)
+    'h' -> InvalidState tEnv env help
+    'q' -> QuitState
+    _ -> InvalidState tEnv env "Unknown command"
 
 parseStmt stmt = parser $ lexer stmt
-
-tryTypeOf str tEnv = catch (print $ fst (typeof (parseStmt str) tEnv)) handler
 
 handler :: SomeException -> IO ()
 handler = print

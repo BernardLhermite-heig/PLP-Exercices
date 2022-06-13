@@ -72,7 +72,7 @@ parseCmd cmd rest tEnv env state =
     't' -> case rest of
       (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv)
       _ -> MessageState tEnv env "Missing argument <expr>"
-    'e' -> MessageState tEnv env (show tEnv ++ show env)
+    'e' -> MessageState tEnv env (show tEnv ++ "\n" ++ show env)
     'h' -> MessageState tEnv env help
     'q' -> QuitState
     _ -> MessageState tEnv env "Unknown command"

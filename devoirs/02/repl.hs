@@ -10,7 +10,7 @@ import System.Exit (exitSuccess)
 import System.IO
 import Text.Printf (printf)
 
-data State = StandardState TEnv Env | MessageState TEnv Env String | QuitState
+data State = StandardState TEnv Env | MessageState TEnv Env String | QuitState | EditionState TEnv Env
 
 main :: IO ()
 main =
@@ -31,12 +31,26 @@ help =
 quit :: IO ()
 quit = exitSuccess
 
-repl :: State -> IO ()
-repl QuitState = quit
-repl (MessageState oldTEnv oldEnv msg) = catch (putStrLn msg) handler >> repl (StandardState oldTEnv oldEnv)
+displayMessage msg = catch (putStrLn msg) handler -- catch nécessaire si c'est une exception visiblement
   where
     handler :: SomeException -> IO ()
     handler = print
+
+repl :: State -> IO ()
+repl QuitState = quit
+repl state@(EditionState tEnv env) = do
+  content <- readUntil (== ":}")
+  state <- evalLines content tEnv env state
+  repl state
+  where
+    evalLines [] tEnv env state = return state
+    evalLines (l : ls) tEnv env state = do
+      state <- evalLine l tEnv env
+      case state of
+        StandardState tEnv' env' -> evalLines ls tEnv' env' state
+        MessageState tEnv' env' msg -> displayMessage msg >> evalLines ls tEnv' env' (StandardState tEnv' env')
+        _ -> error "this should not happen"
+repl (MessageState oldTEnv oldEnv msg) = displayMessage msg >> repl (StandardState oldTEnv oldEnv)
 repl state@(StandardState tEnv env) =
   do
     putStr "> "
@@ -54,8 +68,8 @@ evalLine line tEnv env =
     ( do
         stmt <- evaluate $ parseLine line
         sem@(t, tEnv') <- evaluate $ typeof stmt tEnv
-        let tEnv'' = if t == TAny then tEnv' else tEnv'
-        case tEnv'' `seq` eval stmt env of
+        let tEnv'' = if t == TAny then tEnv' else tEnv' -- Force l'analyse sémantique complète, merci la lazy-evaluation
+        case tEnv'' `seq` eval stmt env of -- seq pour forcer l'évluation de tEnv'' et ^
           Left env' -> return $ StandardState tEnv'' env'
           Right value -> return $ MessageState tEnv env (show value)
     )
@@ -66,8 +80,7 @@ evalLine line tEnv env =
 
 parseCmd cmd rest tEnv env state =
   case cmd of
-    '{' -> error "{" --Right $ print state
-    '}' -> error "}"
+    '{' -> EditionState tEnv env
     'r' -> state
     't' -> case rest of
       (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv)
@@ -78,3 +91,14 @@ parseCmd cmd rest tEnv env state =
     _ -> MessageState tEnv env "Unknown command"
 
 parseLine line = parser $ lexer line
+
+-- Source: https://stackoverflow.com/questions/49955881/haskell-recursive-function-to-read-input-from-user-until-a-condition-and-then-r
+collectUntil :: (Monad m) => m a -> (a -> Bool) -> m [a]
+collectUntil act f = do
+  x <- act
+  if f x
+    then return []
+    else (x :) <$> collectUntil act f
+
+readUntil :: (String -> Bool) -> IO [String]
+readUntil = collectUntil getLine

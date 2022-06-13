@@ -33,7 +33,7 @@ quit = exitSuccess
 
 repl :: State -> IO ()
 repl QuitState = quit
-repl (InvalidState oldTEnv oldEnv msg) = putStrLn msg >> repl (ValidState oldTEnv oldEnv)
+repl (InvalidState oldTEnv oldEnv msg) = catch (putStrLn msg) handler >> repl (ValidState oldTEnv oldEnv)
 repl state@(ValidState tEnv env) =
   do
     putStr "> "
@@ -43,58 +43,24 @@ repl state@(ValidState tEnv env) =
       (':' : cmd : rest) -> repl $ parseCmd cmd rest tEnv env state
       [] -> repl state
       _ -> do
-        tokens <- tryLexer line state
-        case tokens of
-          Left state -> repl state
-          Right tokens -> do
-            ast <- tryParser tokens tEnv env
-            case ast of
-              Left state -> repl state
-              Right ast -> do
-                semantic <- tryTypeOf ast tEnv env
-                case semantic of
-                  Left state -> repl state
-                  Right semantic@(t, tEnv') -> do
-                    final <- tryEval ast tEnv' env
-                    repl final
+        t <- parseStmt' line tEnv env
+        repl t
 
-tryLexer line state = do
-  tokens <- try (evaluate $ lexer line) :: IO (Either SomeException [TokenPosn])
-  case tokens of
-    Left e -> return $ Left $ InvalidState emptyTEnv emptyEnv (show e)
-    Right tokens -> return $ Right tokens
-
-tryParser tokens tEnv env = do
-  ast <- try (evaluate $ parser tokens) :: IO (Either SomeException Stmt)
-  case ast of
-    Left e -> return $ Left $ InvalidState tEnv env (show e)
-    Right ast -> return $ Right ast
-
-tryTypeOf stmt tEnv env = do
-  semanticAnal <- try (evaluate $ typeof stmt tEnv) :: IO (Either SomeException (Type, TEnv))
-  case semanticAnal of
-    Left e -> return $ Left $ InvalidState tEnv env (show e)
-    Right semanticAnal@(t, _) ->
-      if t == TAny then return $ Right semanticAnal else return $ Right semanticAnal
-
-tryEval stmt tEnv env = do
+parseStmt' line tEnv env =
   catch
     ( do
-        case eval stmt env of
-          Left env' -> return (ValidState tEnv env')
-          Right val -> print val >> return (ValidState tEnv env)
+        stmt <- evaluate $ parser $ lexer line
+        sem@(t, tEnv') <- evaluate $ typeof stmt tEnv
+        let tEnv'' = if t == TAny then tEnv' else tEnv'
+        putStrLn "test"
+        case tEnv'' `seq` eval stmt env of
+          Left env' -> return $ ValidState tEnv'' env'
+          Right value -> return $ InvalidState tEnv env (show value)
     )
     handler
   where
     handler :: SomeException -> IO State
-    handler e = return $ InvalidState emptyTEnv emptyEnv (show e)
-
-evalStmt line tEnv env = do
-  stmt <- evaluate $ parseStmt line
-  semanticAnal@(_, newTEnv) <- evaluate $ typeof stmt tEnv
-  return $ case newTEnv `seq` eval stmt env of
-    Left env' -> ValidState newTEnv env'
-    Right val -> InvalidState newTEnv env (show val)
+    handler e = return $ InvalidState tEnv env (show e)
 
 parseCmd cmd rest tEnv env state =
   case cmd of

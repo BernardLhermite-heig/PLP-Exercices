@@ -33,7 +33,7 @@ quit = exitSuccess
 
 repl :: State -> IO ()
 repl QuitState = quit
-repl (InvalidState oldTEnv oldEnv msg) = error "s" -- print msg >> repl (ValidState oldTEnv oldEnv)
+repl (InvalidState oldTEnv oldEnv msg) = putStrLn msg >> repl (ValidState oldTEnv oldEnv)
 repl state@(ValidState tEnv env) =
   do
     putStr "> "
@@ -56,12 +56,7 @@ repl state@(ValidState tEnv env) =
                   Left state -> repl state
                   Right semantic@(t, tEnv') -> do
                     final <- tryEval ast tEnv' env
-                    case semantic `seq` final of
-                      Left state -> repl state
-                      Right final -> do
-                        case final of
-                          Left env' -> repl (ValidState tEnv' env')
-                          Right val -> print val >> repl state
+                    repl final
 
 tryLexer line state = do
   tokens <- try (evaluate $ lexer line) :: IO (Either SomeException [TokenPosn])
@@ -79,13 +74,20 @@ tryTypeOf stmt tEnv env = do
   semanticAnal <- try (evaluate $ typeof stmt tEnv) :: IO (Either SomeException (Type, TEnv))
   case semanticAnal of
     Left e -> return $ Left $ InvalidState tEnv env (show e)
-    Right semanticAnal -> return $ Right semanticAnal
+    Right semanticAnal@(t, _) ->
+      if t == TAny then return $ Right semanticAnal else return $ Right semanticAnal
 
 tryEval stmt tEnv env = do
-  eval <- try (evaluate $ eval stmt env) :: IO (Either SomeException (Either Env Value))
-  case eval of
-    Left e -> return $ Left $ InvalidState tEnv env (show e)
-    Right eval -> return $ Right eval
+  catch
+    ( do
+        case eval stmt env of
+          Left env' -> return (ValidState tEnv env')
+          Right val -> print val >> return (ValidState tEnv env)
+    )
+    handler
+  where
+    handler :: SomeException -> IO State
+    handler e = return $ InvalidState emptyTEnv emptyEnv (show e)
 
 evalStmt line tEnv env = do
   stmt <- evaluate $ parseStmt line
@@ -100,7 +102,7 @@ parseCmd cmd rest tEnv env state =
     '}' -> error "}"
     'r' -> state
     't' -> case rest of
-      (' ' : arg) -> state
+      (' ' : arg) -> InvalidState tEnv env (show $ typeof (parseStmt arg) tEnv)
       _ -> InvalidState tEnv env "Missing argument <expr>"
     'e' -> InvalidState tEnv env (show tEnv ++ show env)
     'h' -> InvalidState tEnv env help

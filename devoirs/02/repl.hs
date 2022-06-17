@@ -1,4 +1,4 @@
-import Control.Exception ( SomeException, catch, evaluate )
+import Control.Exception (SomeException, catch, evaluate)
 import Eval
 import GHC.Base (seq)
 import GHC.Conc (pseq)
@@ -8,7 +8,7 @@ import Parser
 import Semantics
 import System.Directory (doesFileExist)
 import System.Exit (exitSuccess)
-import System.IO ( hFlush, stdout )
+import System.IO (hFlush, stdout)
 
 data State
   = StandardState TEnv Env
@@ -30,7 +30,7 @@ help =
     ++ "\n:r réinitialiser l'état de l'interpréteur"
     ++ "\n:t <expr> afficher le type d'une expression"
     ++ "\n:e afficher l'environnement"
-    ++ "\n:f <fichier> charger un fichier"
+    ++ "\n:f <fichier> charger un fichier, chaque instruction doit être séparée par un ';'"
     ++ "\n:h afficher l'aide"
     ++ "\n:q quitter le programme"
 
@@ -50,11 +50,13 @@ repl state@(FromFileState tEnv env file) = do
     then repl (MessageState tEnv env ("Le fichier '" ++ file ++ "' n'existe pas"))
     else do
       content <- readFile file
-      state <- evalLines (lines content) tEnv env state
+      let content' = splitOn ';' content
+      state <- evalLines content' tEnv env state
       repl state
 repl state@(EditionState tEnv env) = do
   content <- readUntil (== ":}")
-  state <- evalLines content tEnv env state
+  let content' = concat content
+  state <- evalLine content' tEnv env
   repl state
 repl (MessageState oldTEnv oldEnv msg) = displayMessage msg >> repl (StandardState oldTEnv oldEnv)
 repl state@(StandardState tEnv env) =
@@ -119,3 +121,11 @@ evalLines (l : ls) tEnv env state = do
     StandardState tEnv' env' -> evalLines ls tEnv' env' state
     MessageState tEnv' env' msg -> displayMessage msg >> evalLines ls tEnv' env' (StandardState tEnv' env')
     _ -> error "this should not happen"
+
+-- Source : https://codereview.stackexchange.com/questions/253400/split-string-by-delimiter-in-haskell
+splitOn :: Char -> String -> [String]
+splitOn _ "" = []
+splitOn delimiter str =
+  let (start, rest) = break (== delimiter) str
+      (_, remain) = span (== delimiter) rest
+   in start : splitOn delimiter remain

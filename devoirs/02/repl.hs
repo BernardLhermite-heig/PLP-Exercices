@@ -1,4 +1,4 @@
-import Control.Exception (SomeException (SomeException), catch, evaluate, try)
+import Control.Exception ( SomeException, catch, evaluate )
 import Eval
 import GHC.Base (seq)
 import GHC.Conc (pseq)
@@ -8,8 +8,7 @@ import Parser
 import Semantics
 import System.Directory (doesFileExist)
 import System.Exit (exitSuccess)
-import System.IO
-import Text.Printf (printf)
+import System.IO ( hFlush, stdout )
 
 data State
   = StandardState TEnv Env
@@ -38,7 +37,7 @@ help =
 quit :: IO ()
 quit = exitSuccess
 
-displayMessage msg = catch (putStrLn msg) handler -- catch nécessaire si c'est une exception visiblement
+displayMessage msg = catch (putStrLn msg) handler -- catch nécessaire si msg est une exception
   where
     handler :: SomeException -> IO ()
     handler = print
@@ -90,7 +89,7 @@ parseCmd cmd rest tEnv env state =
     '{' -> EditionState tEnv env
     'r' -> state
     't' -> case rest of
-      (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv)
+      (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv) -- <- peut contenir une exception (:
       _ -> MessageState tEnv env "Missing argument <expr>"
     'e' -> MessageState tEnv env (show tEnv ++ "\n" ++ show env)
     'f' -> case rest of

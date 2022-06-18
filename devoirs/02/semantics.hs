@@ -53,7 +53,8 @@ typeofApp id args env = case lookup id env of
 
 typeofIf x y z env = case (typeofExpr x env, t1, t2) of
   (TBool, t1, t2) | t1 == t2 -> t1
-  _ -> throwError $ "both branches must have the same type: t1 = " ++ show t1 ++ ", t2 = " ++ show t2
+  (TBool, _, _) -> throwError $ "both branches must have the same type: t1 = " ++ show t1 ++ ", t2 = " ++ show t2
+  (t, _, _) -> throwError $ "if condition must be a boolean. Actual: " ++ show t
   where
     t1 = typeofExpr y env
     t2 = typeofExpr z env

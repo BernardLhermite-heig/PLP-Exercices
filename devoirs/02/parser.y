@@ -97,7 +97,8 @@ Type
     | 'Boolean'                                                     {TBool}
     | TypeTuple                                                     {$1}
 TypeTuple
-    : '(' Type 'and his friend' Type ')'                            {TTuple (Arg $2 "") (Arg $4 "")} -- :t (5 and his friend (yep and his friend 4))
+    : '(' Type 'and his friend' Type ')'                            {TTuple (Arg $2 "") (Arg $4 "")}
+    -- TODO tuple de N (sucre syntaxique)
 
 FunctionApp
     : 'summon' 'identifier' 'with' FunctionAppArgs                  {EApp $2 $4}

@@ -7,7 +7,6 @@ module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
 $digit = 0-9
 $alpha = [a-zA-Z]
 
--- Règles, chaque règle doit spécifier une lambda expression de type [Char] -> Token
 tokens :-
 
   $white+                         ;

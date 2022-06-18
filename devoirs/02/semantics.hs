@@ -116,7 +116,7 @@ typeofValue :: Value -> TEnv -> Type
 typeofValue (VInteger _) env = TInteger
 typeofValue (VBool _) env = TBool
 typeofValue (VTuple l r) env = TTuple (Arg (typeofExpr l env) "") (Arg (typeofExpr r env) "")
-typeofValue _ env = error "not implemented" -- TODO ?
+typeofValue _ env = error "not implemented" -- ne devrait pas arriver
 
 typeofPattern :: Pattern -> TEnv -> Type
 typeofPattern (PVar id) env = getType id env

@@ -24853,7 +24853,7 @@ alex_actions = array (0 :: Int, 149)
   , (0,alex_action_26)
   ]
 
-{-# LINE 58 "lexer.x" #-}
+{-# LINE 57 "lexer.x" #-}
 -- Each right-hand side has type :: AlexPosn -> String -> Token
 tok :: Token -> AlexPosn -> String -> TokenPosn
 tok ctor p s = TokenPosn ctor p s

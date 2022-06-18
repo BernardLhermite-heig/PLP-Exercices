@@ -48,7 +48,7 @@ evalApp id exprs env = case getValue id env of
         where
           v1 = evalExpr l env
           v2 = evalExpr r env
-      f env ((Arg _ id) : args) (expr : exprs) = (id, evalExpr expr env) : f env args exprs
+      f env (arg : args) (expr : exprs) = matchArg expr arg : f env args exprs
       f env [] [] = env
       f env _ _ = throwError "wrong number of arguments"
       matchArg expr (Arg t id) = (id, evalExpr expr env)

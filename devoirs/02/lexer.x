@@ -1,6 +1,5 @@
 {
 module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
-
 }
 
 %wrapper "posn"

@@ -3,7 +3,6 @@ module Parser where
 
 import Lexer
 import Language
-import Semantics
 }
 
 %name parser

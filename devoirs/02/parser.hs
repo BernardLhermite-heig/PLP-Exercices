@@ -3,7 +3,6 @@ module Parser where
 
 import Lexer
 import Language
-import Semantics
 import qualified Data.Array as Happy_Data_Array
 import qualified Data.Bits as Bits
 import Control.Applicative(Applicative(..))

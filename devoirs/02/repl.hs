@@ -76,12 +76,16 @@ repl state@(StandardState tEnv env) =
 evalLine line tEnv env =
   catch
     ( do
-        stmt <- evaluate $ parseLine line
-        sem@(t, tEnv') <- evaluate $ typeof stmt tEnv
-        let tEnv'' = if t == TAny then tEnv' else tEnv' -- Force l'analyse sémantique complète, merci la lazy-evaluation
-        case tEnv'' `seq` eval stmt env of -- seq pour forcer l'évluation de tEnv'' et ^
-          Left env' -> return $ StandardState tEnv'' env'
-          Right value -> return $ MessageState tEnv env (show value)
+        let lexems = lexer line
+        if null lexems
+          then return (StandardState tEnv env)
+          else do
+            stmt <- evaluate $ parser lexems
+            sem@(t, tEnv') <- evaluate $ typeof stmt tEnv
+            let tEnv'' = if t == TAny then tEnv' else tEnv' -- Force l'analyse sémantique complète, merci la lazy-evaluation
+            case tEnv'' `seq` eval stmt env of -- seq pour forcer l'évluation de tEnv'' et ^
+              Left env' -> return $ StandardState tEnv'' env'
+              Right value -> return $ MessageState tEnv env (show value)
     )
     handler
   where
@@ -93,7 +97,7 @@ parseCmd cmd rest tEnv env state =
     '{' -> EditionState tEnv env
     'r' -> initEnv
     't' -> case rest of
-      (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv) -- <- peut contenir une exception (:
+      (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parser $ lexer arg) tEnv) -- <- peut contenir une exception (:
       _ -> MessageState tEnv env "Argument manquant <expr>"
     'e' -> MessageState tEnv env (show tEnv ++ "\n" ++ show env)
     'f' -> case rest of
@@ -102,8 +106,6 @@ parseCmd cmd rest tEnv env state =
     'h' -> MessageState tEnv env help
     'q' -> QuitState
     _ -> MessageState tEnv env "Commande inconnue"
-
-parseLine line = parser $ lexer line
 
 evalLines [] tEnv env state = return state
 evalLines (l : ls) tEnv env state = do

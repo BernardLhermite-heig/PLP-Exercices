@@ -31,9 +31,8 @@ help =
     ++ "\n:r réinitialiser l'état de l'interpréteur"
     ++ "\n:t <expr> afficher le type d'une expression"
     ++ "\n:e afficher l'environnement"
-    ++ "\n:f <fichier> charger un fichier, chaque instruction doit être séparée par un '"
+    ++ "\n:f <fichier> charger un fichier, chaque instruction doit être séparée par un "
     ++ show splitChar
-    ++ "'"
     ++ "\n:h afficher l'aide"
     ++ "\n:q quitter le programme"
 

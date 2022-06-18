@@ -83,7 +83,7 @@ evalBinary opType op lhs rhs env =
               v2 = evalExpr (EBinary (Operator opType op) r1 r2) env
           _ -> throwError $ op ++ " operator applied to non-comparable"
         op | op `elem` ["<", ">", "<=", ">="] -> case (v1, v2) of
-          (VInteger i1, VInteger i2) -> VBool (toComp op i1 i2)
+          (VInteger i1, VInteger i2) -> VBool (toRel op i1 i2)
           _ -> throwError $ op ++ " operator applied to non-integer"
         op | op `elem` ["&&", "||"] -> case (v1, v2) of
           (VBool b1, VBool b2) -> VBool (toLogic op b1 b2)

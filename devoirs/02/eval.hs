@@ -42,7 +42,7 @@ evalApp id exprs env = case getValue id env of
     [] -> evalExpr expr env
     _ -> evalExpr expr env'
     where
-      env' = error $ show $ f env args exprs
+      env' = f env args exprs
       f env ((Arg (TTuple aL aR) id) : args) (expr@(EValue (VTuple l r)) : exprs) =
         (id, VTuple l r) : matchArg l aL : matchArg r aR : f env args exprs
         where

@@ -1388,7 +1388,7 @@ parser tks = happyRunIdentity happySomeParser where
 happySeq = happyDontSeq
 
 
-parseError [] = error "Parse error at beginning of expression"
+parseError [] = error "Parse error at beginning or end of expression"
 parseError (f:ts) = error $ "Parse error between " ++ show f ++ " and " ++ show l
     where l = last ts
 {-# LINE 1 "templates/GenericTemplate.hs" #-}

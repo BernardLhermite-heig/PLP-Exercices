@@ -153,7 +153,7 @@ BinaryOp
     | 'either'                                                      {Operator Logical "||"}
 
 {
-parseError [] = error "Parse error at beginning of expression"
+parseError [] = error "Parse error at beginning or end of expression"
 parseError (f:ts) = error $ "Parse error between " ++ show f ++ " and " ++ show l
     where l = last ts
 }

@@ -2,9 +2,6 @@ module Language where
 
 import Data.List
 
--- Expr (ELet [Definition "y" [] (EValue (VBool True)),Definition "x" [] (EValue (VInteger 5))] (EVar "y"))
--- Def (Definition "swag" [Arg TBool "y",Arg TInteger "x"] (EVar "x"))
--- Expr (EValue (VTuple (EValue (VInteger 5)) (EValue (VBool True))))
 type Identifier = String
 
 type Env = [(Identifier, Value)]
@@ -31,15 +28,6 @@ data Expr
   | EIf Expr Expr Expr
   deriving (Show)
 
--- behold swag with Integer x which does 1 plus x
--- summon swag with 5
--- EApp "swag" [EValue (VInteger 5)]
--- put that behold x with Integer z which does z plus 1 and this y is 2 into x plus y
-{-
-:> behold swag with Integer x which does 1 plus x
-> summon swag with 5
-EApp "swag" [EValue (VInteger 5)] VFunction (EBinary (Operator Arithmetic "+") (EValue (VInteger 1)) (EVar "x")) [Arg TInteger "x"] []
--}
 data Operator = Operator OperatorType String
   deriving (Show)
 

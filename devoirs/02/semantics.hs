@@ -20,10 +20,9 @@ addToEnv (Definition id args expr) env = (id, TFunction (typeofExpr expr env') a
   where
     env' = foldl f env args
     args' = map (\(Arg t id) -> t) args
-    f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1
-    f env (Arg t id) = (id, t) : env
+    f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1 -- TODO renommer f
+    f env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
 
--- behold f with tuple (Integer a and his friend Integer b) which does a plus b
 addAllToEnv :: [Definition] -> TEnv -> TEnv
 addAllToEnv defs env = foldr addToEnv env defs
 
@@ -130,28 +129,3 @@ getType :: Identifier -> TEnv -> Type
 getType x env = case lookup x env of
   Just t -> t
   Nothing -> throwError $ "identifier " ++ x ++ " not found"
-
--- Tests
--- :t this x is yep
--- :t behold x with Integer y which does 3
--- :t behold x with Integer y which does y times 3
--- :t behold x with Integer y and Integer z which does y times z
--- :t behold x with Integer y and Integer z which does y same as z
-
--- :t (1 and his friend yep)
--- :t (1 and his friend (yep and his friend 4))
-
--- :t put that this x is 2 and this y is 3 into x times y times 2
-
--- :t put that behold x with Integer z which does z plus 2 and this y is 3 into summon x with 3 times y times 2
--- doit throw v
--- :t put that behold x with Integer z which does z plus 2 and this y is 3 into summon x times y times 2
-
--- :t put that behold x which does 2 plus 2 and this y is 3 into summon z with 3
--- :t put that behold x which does 2 plus 2 and this y is 3 into summon x
--- :t put that behold x with Integer z which does z plus 2 and this y is 3 into summon x with 3
--- :t put that behold x with Integer z which does z plus 2 and this y is 3 into summon x with yep
-
--- :t what is 3 times 3 ? perhaps 6 which does yep perhaps 2 which does pasyep perhaps x which does pasyep
--- :t what is 3 times 3 ? perhaps 6 which does yep perhaps 2 which does pasyep perhaps x which does pasyep perhaps who cares which does yep
--- :t what is 3 times 3 ? perhaps who cares which does yep perhaps 6 which does yep perhaps 2 which does pasyep perhaps x which does pasyep

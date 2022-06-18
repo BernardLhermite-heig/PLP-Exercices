@@ -5,9 +5,7 @@ module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
 %wrapper "posn"
 
 $digit = 0-9
-$alpha = [a-zA-Z] 
-$lowercase = [a-z]
-$uppercase = [A-Z]
+$alpha = [a-zA-Z]
 
 -- Règles, chaque règle doit spécifier une lambda expression de type [Char] -> Token
 tokens :-
@@ -53,7 +51,7 @@ tokens :-
   "rather than"                   { tok RatherThan }
 
   $digit+                         { \p s -> TokenPosn (Integer $ read s) p s }
-  $alpha+                         { \p s -> TokenPosn (Name s) p s }
+  $alpha [$alpha $digit]*         { \p s -> TokenPosn (Name s) p s }
   
   .                               { tok Error }
 

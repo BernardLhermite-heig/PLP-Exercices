@@ -7,10 +7,10 @@ state 50 contains 13 shift/reduce conflicts.
 state 60 contains 1 shift/reduce conflicts.
 state 65 contains 13 shift/reduce conflicts.
 state 66 contains 1 shift/reduce conflicts.
-state 91 contains 13 shift/reduce conflicts.
-state 93 contains 1 reduce/reduce conflicts.
+state 92 contains 13 shift/reduce conflicts.
 state 94 contains 1 reduce/reduce conflicts.
-state 100 contains 13 shift/reduce conflicts.
+state 95 contains 1 reduce/reduce conflicts.
+state 103 contains 13 shift/reduce conflicts.
 
 -----------------------------------------------------------------------------
 Grammar
@@ -35,7 +35,7 @@ Grammar
 	Args -> Arg                                        (17)
 	Args -> Args 'and' Arg                             (18)
 	Arg -> Type 'identifier'                           (19)
-	Arg -> TypeTuple                                   (20)
+	Arg -> 'identifier' '(' Arg 'and his friend' Arg ')'   (20)
 	Type -> 'Integer'                                  (21)
 	Type -> 'Boolean'                                  (22)
 	Type -> TypeTuple                                  (23)
@@ -1039,7 +1039,7 @@ State 47
 
 	FunctionDef -> 'behold' 'identifier' FArgs . 'which does' Expr    (rule 14)
 
-	'which does'   shift, and enter state 76
+	'which does'   shift, and enter state 77
 
 
 State 48
@@ -1047,8 +1047,9 @@ State 48
 	FArgs -> 'with' . Args                              (rule 16)
 
 	'('            shift, and enter state 73
-	'Integer'      shift, and enter state 74
-	'Boolean'      shift, and enter state 75
+	'identifier'   shift, and enter state 74
+	'Integer'      shift, and enter state 75
+	'Boolean'      shift, and enter state 76
 
 	Args           goto state 69
 	Arg            goto state 70
@@ -1290,7 +1291,7 @@ State 58
 	'different of' shift, and enter state 42
 	'both'         shift, and enter state 43
 	'either'       shift, and enter state 44
-	'rather than'  shift, and enter state 90
+	'rather than'  shift, and enter state 91
 
 	BinaryOp       goto state 31
 
@@ -1352,22 +1353,22 @@ State 60
 	'rather than'  reduce using rule 33
 	%eof           reduce using rule 33
 
-	CaseOfs        goto state 89
+	CaseOfs        goto state 90
 	CaseOf         goto state 60
 
 State 61
 
 	CaseOf -> 'perhaps' . Pattern 'which does' Expr     (rule 35)
 
-	'('            shift, and enter state 86
-	'who cares'    shift, and enter state 87
+	'('            shift, and enter state 87
+	'who cares'    shift, and enter state 88
 	'yep'          shift, and enter state 18
 	'pasyep'       shift, and enter state 19
-	'identifier'   shift, and enter state 88
+	'identifier'   shift, and enter state 89
 	'integer'      shift, and enter state 21
 
-	Pattern        goto state 84
-	Literal        goto state 85
+	Pattern        goto state 85
+	Literal        goto state 86
 
 State 62
 
@@ -1412,7 +1413,7 @@ State 64
 	Expr -> Expr . BinaryOp Expr                        (rule 7)
 	Literal -> '(' Expr 'and his friend' Expr . ')'     (rule 43)
 
-	')'            shift, and enter state 83
+	')'            shift, and enter state 84
 	'plus'         shift, and enter state 32
 	'minus'        shift, and enter state 33
 	'times'        shift, and enter state 34
@@ -1490,7 +1491,7 @@ State 66
 	FunctionApp -> 'summon' 'identifier' 'with' FunctionAppArgs .    (rule 25)
 	FunctionAppArgs -> FunctionAppArgs . 'and' FunctionAppArg    (rule 28)
 
-	'and'          shift, and enter state 82
+	'and'          shift, and enter state 83
 			(reduce using rule 25)
 
 	')'            reduce using rule 25
@@ -1573,7 +1574,7 @@ State 69
 	FArgs -> 'with' Args .                              (rule 16)
 	Args -> Args . 'and' Arg                            (rule 18)
 
-	'and'          shift, and enter state 81
+	'and'          shift, and enter state 82
 	'which does'   reduce using rule 16
 
 
@@ -1589,16 +1590,15 @@ State 71
 
 	Arg -> Type . 'identifier'                          (rule 19)
 
-	'identifier'   shift, and enter state 80
+	'identifier'   shift, and enter state 81
 
 
 State 72
 
-	Arg -> TypeTuple .                                  (rule 20)
 	Type -> TypeTuple .                                 (rule 23)
 
-	'and'          reduce using rule 20
-	'which does'   reduce using rule 20
+	')'            reduce using rule 23
+	'and his friend'reduce using rule 23
 	'identifier'   reduce using rule 23
 
 
@@ -1607,13 +1607,20 @@ State 73
 	TypeTuple -> '(' . Type 'and his friend' Type ')'    (rule 24)
 
 	'('            shift, and enter state 73
-	'Integer'      shift, and enter state 74
-	'Boolean'      shift, and enter state 75
+	'Integer'      shift, and enter state 75
+	'Boolean'      shift, and enter state 76
 
-	Type           goto state 78
-	TypeTuple      goto state 79
+	Type           goto state 80
+	TypeTuple      goto state 72
 
 State 74
+
+	Arg -> 'identifier' . '(' Arg 'and his friend' Arg ')'    (rule 20)
+
+	'('            shift, and enter state 79
+
+
+State 75
 
 	Type -> 'Integer' .                                 (rule 21)
 
@@ -1622,7 +1629,7 @@ State 74
 	'identifier'   reduce using rule 21
 
 
-State 75
+State 76
 
 	Type -> 'Boolean' .                                 (rule 22)
 
@@ -1631,7 +1638,7 @@ State 75
 	'identifier'   reduce using rule 22
 
 
-State 76
+State 77
 
 	FunctionDef -> 'behold' 'identifier' FArgs 'which does' . Expr    (rule 14)
 
@@ -1647,13 +1654,13 @@ State 76
 	'integer'      shift, and enter state 21
 	'suppose'      shift, and enter state 22
 
-	Expr           goto state 77
+	Expr           goto state 78
 	FunctionApp    goto state 8
 	If             goto state 9
 	Literal        goto state 10
 	UnaryOp        goto state 11
 
-State 77
+State 78
 
 	Expr -> Expr . BinaryOp Expr                        (rule 7)
 	FunctionDef -> 'behold' 'identifier' FArgs 'which does' Expr .    (rule 14)
@@ -1677,42 +1684,50 @@ State 77
 
 	BinaryOp       goto state 31
 
-State 78
-
-	TypeTuple -> '(' Type . 'and his friend' Type ')'    (rule 24)
-
-	'and his friend'shift, and enter state 98
-
-
 State 79
 
-	Type -> TypeTuple .                                 (rule 23)
+	Arg -> 'identifier' '(' . Arg 'and his friend' Arg ')'    (rule 20)
 
-	')'            reduce using rule 23
-	'and his friend'reduce using rule 23
+	'('            shift, and enter state 73
+	'identifier'   shift, and enter state 74
+	'Integer'      shift, and enter state 75
+	'Boolean'      shift, and enter state 76
 
+	Arg            goto state 100
+	Type           goto state 71
+	TypeTuple      goto state 72
 
 State 80
 
-	Arg -> Type 'identifier' .                          (rule 19)
+	TypeTuple -> '(' Type . 'and his friend' Type ')'    (rule 24)
 
-	'and'          reduce using rule 19
-	'which does'   reduce using rule 19
+	'and his friend'shift, and enter state 99
 
 
 State 81
 
+	Arg -> Type 'identifier' .                          (rule 19)
+
+	'and'          reduce using rule 19
+	')'            reduce using rule 19
+	'and his friend'reduce using rule 19
+	'which does'   reduce using rule 19
+
+
+State 82
+
 	Args -> Args 'and' . Arg                            (rule 18)
 
 	'('            shift, and enter state 73
-	'Integer'      shift, and enter state 74
-	'Boolean'      shift, and enter state 75
+	'identifier'   shift, and enter state 74
+	'Integer'      shift, and enter state 75
+	'Boolean'      shift, and enter state 76
 
-	Arg            goto state 97
+	Arg            goto state 98
 	Type           goto state 71
 	TypeTuple      goto state 72
 
-State 82
+State 83
 
 	FunctionAppArgs -> FunctionAppArgs 'and' . FunctionAppArg    (rule 28)
 
@@ -1730,12 +1745,12 @@ State 82
 
 	Expr           goto state 65
 	FunctionApp    goto state 8
-	FunctionAppArg goto state 96
+	FunctionAppArg goto state 97
 	If             goto state 9
 	Literal        goto state 10
 	UnaryOp        goto state 11
 
-State 83
+State 84
 
 	Literal -> '(' Expr 'and his friend' Expr ')' .     (rule 43)
 
@@ -1764,14 +1779,14 @@ State 83
 	%eof           reduce using rule 43
 
 
-State 84
+State 85
 
 	CaseOf -> 'perhaps' Pattern . 'which does' Expr     (rule 35)
 
-	'which does'   shift, and enter state 95
+	'which does'   shift, and enter state 96
 
 
-State 85
+State 86
 
 	Pattern -> Literal .                                (rule 39)
 
@@ -1779,32 +1794,32 @@ State 85
 	'which does'   reduce using rule 39
 
 
-State 86
+State 87
 
 	Pattern -> '(' . Pattern 'and his friend' Pattern ')'    (rule 38)
 	Literal -> '(' . Expr 'and his friend' Expr ')'     (rule 43)
 
 	'summon'       shift, and enter state 12
-	'('            shift, and enter state 86
+	'('            shift, and enter state 87
 	'put that'     shift, and enter state 14
 	'what is'      shift, and enter state 15
-	'who cares'    shift, and enter state 87
+	'who cares'    shift, and enter state 88
 	'neg'          shift, and enter state 16
 	'not'          shift, and enter state 17
 	'yep'          shift, and enter state 18
 	'pasyep'       shift, and enter state 19
-	'identifier'   shift, and enter state 94
+	'identifier'   shift, and enter state 95
 	'integer'      shift, and enter state 21
 	'suppose'      shift, and enter state 22
 
 	Expr           goto state 28
 	FunctionApp    goto state 8
 	If             goto state 9
-	Pattern        goto state 92
-	Literal        goto state 93
+	Pattern        goto state 93
+	Literal        goto state 94
 	UnaryOp        goto state 11
 
-State 87
+State 88
 
 	Pattern -> 'who cares' .                            (rule 36)
 
@@ -1813,7 +1828,7 @@ State 87
 	'which does'   reduce using rule 36
 
 
-State 88
+State 89
 
 	Pattern -> 'identifier' .                           (rule 37)
 
@@ -1821,7 +1836,7 @@ State 88
 	'which does'   reduce using rule 37
 
 
-State 89
+State 90
 
 	CaseOfs -> CaseOf CaseOfs .                         (rule 34)
 
@@ -1849,7 +1864,7 @@ State 89
 	%eof           reduce using rule 34
 
 
-State 90
+State 91
 
 	If -> 'suppose' Expr 'then we can conclude' Expr 'rather than' . Expr    (rule 32)
 
@@ -1865,13 +1880,13 @@ State 90
 	'integer'      shift, and enter state 21
 	'suppose'      shift, and enter state 22
 
-	Expr           goto state 91
+	Expr           goto state 92
 	FunctionApp    goto state 8
 	If             goto state 9
 	Literal        goto state 10
 	UnaryOp        goto state 11
 
-State 91
+State 92
 
 	Expr -> Expr . BinaryOp Expr                        (rule 7)
 	If -> 'suppose' Expr 'then we can conclude' Expr 'rather than' Expr .    (rule 32)
@@ -1927,14 +1942,14 @@ State 91
 
 	BinaryOp       goto state 31
 
-State 92
+State 93
 
 	Pattern -> '(' Pattern . 'and his friend' Pattern ')'    (rule 38)
 
-	'and his friend'shift, and enter state 101
+	'and his friend'shift, and enter state 104
 
 
-State 93
+State 94
 
 	Expr -> Literal .                                   (rule 8)
 	Pattern -> Literal .                                (rule 39)
@@ -1957,7 +1972,7 @@ State 93
 	'either'       reduce using rule 8
 
 
-State 94
+State 95
 
 	Expr -> 'identifier' .                              (rule 9)
 	Pattern -> 'identifier' .                           (rule 37)
@@ -1980,7 +1995,7 @@ State 94
 	'either'       reduce using rule 9
 
 
-State 95
+State 96
 
 	CaseOf -> 'perhaps' Pattern 'which does' . Expr     (rule 35)
 
@@ -1996,13 +2011,13 @@ State 95
 	'integer'      shift, and enter state 21
 	'suppose'      shift, and enter state 22
 
-	Expr           goto state 100
+	Expr           goto state 103
 	FunctionApp    goto state 8
 	If             goto state 9
 	Literal        goto state 10
 	UnaryOp        goto state 11
 
-State 96
+State 97
 
 	FunctionAppArgs -> FunctionAppArgs 'and' FunctionAppArg .    (rule 28)
 
@@ -2030,7 +2045,7 @@ State 96
 	%eof           reduce using rule 28
 
 
-State 97
+State 98
 
 	Args -> Args 'and' Arg .                            (rule 18)
 
@@ -2038,25 +2053,45 @@ State 97
 	'which does'   reduce using rule 18
 
 
-State 98
+State 99
 
 	TypeTuple -> '(' Type 'and his friend' . Type ')'    (rule 24)
 
 	'('            shift, and enter state 73
-	'Integer'      shift, and enter state 74
-	'Boolean'      shift, and enter state 75
+	'Integer'      shift, and enter state 75
+	'Boolean'      shift, and enter state 76
 
-	Type           goto state 99
-	TypeTuple      goto state 79
+	Type           goto state 102
+	TypeTuple      goto state 72
 
-State 99
+State 100
+
+	Arg -> 'identifier' '(' Arg . 'and his friend' Arg ')'    (rule 20)
+
+	'and his friend'shift, and enter state 101
+
+
+State 101
+
+	Arg -> 'identifier' '(' Arg 'and his friend' . Arg ')'    (rule 20)
+
+	'('            shift, and enter state 73
+	'identifier'   shift, and enter state 74
+	'Integer'      shift, and enter state 75
+	'Boolean'      shift, and enter state 76
+
+	Arg            goto state 107
+	Type           goto state 71
+	TypeTuple      goto state 72
+
+State 102
 
 	TypeTuple -> '(' Type 'and his friend' Type . ')'    (rule 24)
 
-	')'            shift, and enter state 103
+	')'            shift, and enter state 106
 
 
-State 100
+State 103
 
 	Expr -> Expr . BinaryOp Expr                        (rule 7)
 	CaseOf -> 'perhaps' Pattern 'which does' Expr .     (rule 35)
@@ -2112,39 +2147,54 @@ State 100
 
 	BinaryOp       goto state 31
 
-State 101
+State 104
 
 	Pattern -> '(' Pattern 'and his friend' . Pattern ')'    (rule 38)
 
-	'('            shift, and enter state 86
-	'who cares'    shift, and enter state 87
+	'('            shift, and enter state 87
+	'who cares'    shift, and enter state 88
 	'yep'          shift, and enter state 18
 	'pasyep'       shift, and enter state 19
-	'identifier'   shift, and enter state 88
+	'identifier'   shift, and enter state 89
 	'integer'      shift, and enter state 21
 
-	Pattern        goto state 102
-	Literal        goto state 85
+	Pattern        goto state 105
+	Literal        goto state 86
 
-State 102
+State 105
 
 	Pattern -> '(' Pattern 'and his friend' Pattern . ')'    (rule 38)
 
-	')'            shift, and enter state 104
+	')'            shift, and enter state 109
 
 
-State 103
+State 106
 
 	TypeTuple -> '(' Type 'and his friend' Type ')' .    (rule 24)
 
-	'and'          reduce using rule 24
 	')'            reduce using rule 24
 	'and his friend'reduce using rule 24
-	'which does'   reduce using rule 24
 	'identifier'   reduce using rule 24
 
 
-State 104
+State 107
+
+	Arg -> 'identifier' '(' Arg 'and his friend' Arg . ')'    (rule 20)
+
+	')'            shift, and enter state 108
+
+
+State 108
+
+	Arg -> 'identifier' '(' Arg 'and his friend' Arg ')' .    (rule 20)
+
+	'and'          reduce using rule 20
+	')'            reduce using rule 20
+	'and his friend'reduce using rule 20
+	'which does'   reduce using rule 20
+
+
+State 109
 
 	Pattern -> '(' Pattern 'and his friend' Pattern ')' .    (rule 38)
 
@@ -2159,4 +2209,4 @@ Grammar Totals
 Number of rules: 59
 Number of terminals: 40
 Number of non-terminals: 21
-Number of states: 105
+Number of states: 110

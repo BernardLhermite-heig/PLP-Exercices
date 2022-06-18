@@ -18,9 +18,12 @@ addToEnv :: Definition -> TEnv -> TEnv
 addToEnv (Definition id [] expr) env = (id, typeofExpr expr env) : env -- Variables
 addToEnv (Definition id args expr) env = (id, TFunction (typeofExpr expr env') args') : env -- Fonctions
   where
-    env' = foldl (\env (Arg t id) -> (id, t) : env) env args
+    env' = foldl f env args
     args' = map (\(Arg t id) -> t) args
+    f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1
+    f env (Arg t id) = (id, t) : env
 
+-- behold f with tuple (Integer a and his friend Integer b) which does a plus b
 addAllToEnv :: [Definition] -> TEnv -> TEnv
 addAllToEnv defs env = foldr addToEnv env defs
 
@@ -112,13 +115,13 @@ typeofBinary opType op lhs rhs env =
 typeofValue :: Value -> TEnv -> Type
 typeofValue (VInteger _) env = TInteger
 typeofValue (VBool _) env = TBool
-typeofValue (VTuple l r) env = TTuple (typeofExpr l env) (typeofExpr r env)
+typeofValue (VTuple l r) env = TTuple (Arg (typeofExpr l env) "") (Arg (typeofExpr r env) "")
 typeofValue _ env = error "not implemented" -- TODO ?
 
 typeofPattern :: Pattern -> TEnv -> Type
 typeofPattern (PVar id) env = getType id env
 typeofPattern (PValue value) env = typeofValue value env
-typeofPattern (PTuple l r) env = TTuple (typeofPattern l env) (typeofPattern r env)
+typeofPattern (PTuple l r) env = TTuple (Arg (typeofPattern l env) "") (Arg (typeofPattern r env) "")
 typeofPattern PAny env = TAny
 
 throwError msg = error ("type error: " ++ msg ++ " ")

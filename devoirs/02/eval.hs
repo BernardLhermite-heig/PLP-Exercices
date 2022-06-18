@@ -19,7 +19,7 @@ evalDef (Definition id [] expr) env = (id, evalExpr expr env) : env -- Variable 
 evalDef (Definition id args expr) env = (id, VFunction expr args env) : env -- Function avec paramètres
 
 evalExpr :: Expr -> Env -> Value
-evalExpr e@(EApp id exprs) env = evalApp id exprs env
+evalExpr (EApp id exprs) env = evalApp id exprs env
 evalExpr (ELet defs expr) env = evalLet defs expr env
 evalExpr (EVar id) env = getValue id env
 evalExpr (EValue value) env = value
@@ -38,11 +38,19 @@ evalLet defs expr env = evalExpr expr env'
     env' = foldr evalDef env defs
 
 evalApp id exprs env = case getValue id env of
-  VFunction expr args env' -> case exprs of -- TODO fix les tuples
+  VFunction expr args env' -> case exprs of
     [] -> evalExpr expr env
     _ -> evalExpr expr env'
     where
-      env' = zipWith matchArg exprs args ++ env
+      env' = error $ show $ f env args exprs
+      f env ((Arg (TTuple aL aR) id) : args) (expr@(EValue (VTuple l r)) : exprs) =
+        (id, VTuple l r) : matchArg l aL : matchArg r aR : f env args exprs
+        where
+          v1 = evalExpr l env
+          v2 = evalExpr r env
+      f env ((Arg _ id) : args) (expr : exprs) = (id, evalExpr expr env) : f env args exprs
+      f env [] [] = env
+      f env _ _ = throwError "wrong number of arguments"
       matchArg expr (Arg t id) = (id, evalExpr expr env)
   val -> val
 

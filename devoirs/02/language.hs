@@ -69,7 +69,7 @@ data Value
 data Type
   = TBool
   | TInteger
-  | TTuple Type Type
+  | TTuple Arg Arg
   | TFunction Type [Type]
   | TAny
   deriving (Eq, Show)

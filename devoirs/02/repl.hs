@@ -92,16 +92,24 @@ parseCmd cmd rest tEnv env state =
     'r' -> initEnv
     't' -> case rest of
       (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv) -- <- peut contenir une exception (:
-      _ -> MessageState tEnv env "Missing argument <expr>"
+      _ -> MessageState tEnv env "Argument manquant <expr>"
     'e' -> MessageState tEnv env (show tEnv ++ "\n" ++ show env)
     'f' -> case rest of
       (' ' : arg) -> FromFileState tEnv env arg
-      _ -> MessageState tEnv env "Missing argument <fichier>"
+      _ -> MessageState tEnv env "Argument manquant <fichier>"
     'h' -> MessageState tEnv env help
     'q' -> QuitState
-    _ -> MessageState tEnv env "Unknown command"
+    _ -> MessageState tEnv env "Commande inconnue"
 
 parseLine line = parser $ lexer line
+
+evalLines [] tEnv env state = return state
+evalLines (l : ls) tEnv env state = do
+  state <- evalLine l tEnv env
+  case state of
+    StandardState tEnv' env' -> evalLines ls tEnv' env' state
+    MessageState tEnv' env' msg -> displayMessage msg >> evalLines ls tEnv' env' (StandardState tEnv' env')
+    _ -> error "ne devrait pas arriver"
 
 -- Source: https://stackoverflow.com/questions/49955881/haskell-recursive-function-to-read-input-from-user-until-a-condition-and-then-r
 collectUntil :: (Monad m) => m a -> (a -> Bool) -> m [a]
@@ -114,15 +122,7 @@ collectUntil act f = do
 readUntil :: (String -> Bool) -> IO [String]
 readUntil = collectUntil getLine
 
-evalLines [] tEnv env state = return state
-evalLines (l : ls) tEnv env state = do
-  state <- evalLine l tEnv env
-  case state of
-    StandardState tEnv' env' -> evalLines ls tEnv' env' state
-    MessageState tEnv' env' msg -> displayMessage msg >> evalLines ls tEnv' env' (StandardState tEnv' env')
-    _ -> error "this should not happen"
-
--- Source : https://codereview.stackexchange.com/questions/253400/split-string-by-delimiter-in-haskell
+-- Source: https://codereview.stackexchange.com/questions/253400/split-string-by-delimiter-in-haskell
 splitOn :: Char -> String -> [String]
 splitOn _ "" = []
 splitOn delimiter str =

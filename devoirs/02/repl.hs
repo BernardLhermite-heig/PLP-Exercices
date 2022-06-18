@@ -89,7 +89,7 @@ evalLine line tEnv env =
 parseCmd cmd rest tEnv env state =
   case cmd of
     '{' -> EditionState tEnv env
-    'r' -> state
+    'r' -> initEnv
     't' -> case rest of
       (' ' : arg) -> MessageState tEnv env (show $ fst $ typeof (parseLine arg) tEnv) -- <- peut contenir une exception (:
       _ -> MessageState tEnv env "Missing argument <expr>"

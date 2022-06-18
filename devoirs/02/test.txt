@@ -77,11 +77,11 @@ what is 2 plus 2 ?
     perhaps x which does x plus 1
     perhaps who cares which does 3; -- 5
 
-suppose summon sum with 2 and 2 as weak as 4
+suppose (summon sum with 2 and 2) as weak as 4
     then we can conclude yep
-    rather than pasyep; -- yep
+    rather than pasyep; -- true
 
-suppose summon sum with 2 and 2 as weak as 4
+suppose (summon sum with 2 and 2) as weak as 4
     then we can conclude yep
     rather than 5; -- throw
 
@@ -89,7 +89,11 @@ suppose summon sum with 2 and 2
     then we can conclude yep
     rather than pasyep; -- throw
 
--- Tests
+suppose (summon sum with 2 and 2) as strong as 6
+    then we can conclude 5
+    rather than 10; -- 10
+
+-- Tests de type
 -- :t this x is yep
 -- :t behold x with Integer y which does 3
 -- :t behold x with Integer y which does y times 3

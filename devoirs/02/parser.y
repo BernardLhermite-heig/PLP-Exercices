@@ -58,13 +58,12 @@ import Language
 %left 'plus' 'minus'
 %left 'times' 'split' 'rest'
 %left 'neg' 'not'
--- %left '('
+
 %%
 
 Statement
     : Definition                                                    {Def $1}
     | Expr                                                          {Expr $1}
-    -- | '(' Statement ')'                         {$2}
 
 Expr
     : 'put that' LetInDefs 'into' Expr                              {ELet $2 $4}
@@ -76,6 +75,7 @@ Expr
     | 'identifier'                                                  {EVar $1}
     | FunctionApp                                                   {$1}
     | If                                                            {$1}
+    | '(' Expr ')'                                                  {$2}
 
 Definition
     : FunctionDef                                                   {$1}        

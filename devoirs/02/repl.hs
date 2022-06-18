@@ -1,7 +1,6 @@
 import Control.Exception (SomeException, catch, evaluate)
 import Eval
 import GHC.Base (seq)
-import GHC.Conc (pseq)
 import Language
 import Lexer
 import Parser
@@ -25,12 +24,16 @@ main =
 
 initEnv = StandardState emptyTEnv emptyEnv
 
+splitChar = ';'
+
 help =
   ":{ activer l'édition multi-ligne (:} pour la désactiver)"
     ++ "\n:r réinitialiser l'état de l'interpréteur"
     ++ "\n:t <expr> afficher le type d'une expression"
     ++ "\n:e afficher l'environnement"
-    ++ "\n:f <fichier> charger un fichier, chaque instruction doit être séparée par un ';'"
+    ++ "\n:f <fichier> charger un fichier, chaque instruction doit être séparée par un '"
+    ++ show splitChar
+    ++ "'"
     ++ "\n:h afficher l'aide"
     ++ "\n:q quitter le programme"
 
@@ -50,7 +53,7 @@ repl state@(FromFileState tEnv env file) = do
     then repl (MessageState tEnv env ("Le fichier '" ++ file ++ "' n'existe pas"))
     else do
       content <- readFile file
-      let content' = splitOn ';' content
+      let content' = splitOn splitChar content
       state <- evalLines content' tEnv env state
       repl state
 repl state@(EditionState tEnv env) = do

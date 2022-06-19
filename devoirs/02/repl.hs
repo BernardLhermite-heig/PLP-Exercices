@@ -1,3 +1,8 @@
+{-
+: Auteur:   Stéphane Marengo
+: Date:     19.06.2022
+-}
+
 import Control.Exception (SomeException, catch, evaluate)
 import Eval
 import GHC.Base (seq)

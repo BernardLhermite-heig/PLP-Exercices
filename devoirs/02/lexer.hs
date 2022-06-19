@@ -1,6 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 {-# LANGUAGE CPP #-}
 {-# LINE 1 "lexer.x" #-}
+{-
+: Auteur:   Stéphane Marengo
+: Date:     19.06.2022
+-}
 module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
 #if __GLASGOW_HASKELL__ >= 603
 #include "ghcconfig.h"
@@ -24853,7 +24857,7 @@ alex_actions = array (0 :: Int, 149)
   , (0,alex_action_26)
   ]
 
-{-# LINE 57 "lexer.x" #-}
+{-# LINE 61 "lexer.x" #-}
 -- Each right-hand side has type :: AlexPosn -> String -> Token
 tok :: Token -> AlexPosn -> String -> TokenPosn
 tok ctor p s = TokenPosn ctor p s

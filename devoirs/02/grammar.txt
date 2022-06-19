@@ -1,19 +1,7 @@
-Fonctionnalités :
-Une définition ne retourne pas de valeur
-lors de l’évaluation mais augmente l’environnement de 
-l’interpréteur (global) avec une nouvelle association
-alors qu’une expression retourne une valeur d’exécution 
-durant l’évaluation.
-
-
-Définition de fonctions (non-récursives) ; 
-définition de variables ; 
-littéraux entiers, booléens, tuples ;
-occurrences de variable ;
-applications de fonction ; 
-expressions let-in avec plusieurs définitions ; 
-expressions case-of sans gardes avec motifs universel, variable, littéraux ; 
-opérations unaires, binaires.
+{-
+: Auteur:   Stéphane Marengo
+: Date:     19.06.2022
+-}
 
 Digit 			-> [0-9]
 Alpha			-> [a-zA-Z]

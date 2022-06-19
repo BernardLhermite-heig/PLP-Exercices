@@ -1,3 +1,8 @@
+{-
+: Auteur:   Stéphane Marengo
+: Date:     19.06.2022
+-}
+
 {
 module Parser where
 

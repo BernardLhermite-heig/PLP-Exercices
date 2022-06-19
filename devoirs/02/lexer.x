@@ -1,4 +1,8 @@
 {
+{-
+: Auteur:   Stéphane Marengo
+: Date:     19.06.2022
+-}
 module Lexer (lexer, AlexPosn(..), Token(..), TokenPosn(..)) where
 }
 

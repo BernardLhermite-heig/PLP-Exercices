@@ -1,5 +1,6 @@
 module Semantics (typeof, emptyTEnv, TEnv) where
 
+import GHC.Base (seq)
 import Language
 
 emptyTEnv :: TEnv
@@ -16,10 +17,12 @@ typeofDef def@(Definition id args expr) env = (getType id env', env')
 
 addToEnv :: Definition -> TEnv -> TEnv
 addToEnv (Definition id [] expr) env = (id, typeofExpr expr env) : env -- Variables
-addToEnv (Definition id args expr) env = (id, TFunction (typeofExpr expr env') args') : env -- Fonctions
+addToEnv (Definition id args expr) env = retType' `seq` (id, TFunction retType' args') : env -- Fonctions
   where
     env' = foldl f env args
-    args' = map (\(Arg t id) -> t) args
+    args' = map typeofArg args
+    retType = typeofExpr expr env'
+    retType' = if retType == TAny then retType else retType
     f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1 -- TODO renommer f
     f env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
 
@@ -40,7 +43,7 @@ typeofApp id args env = case lookup id env of
   Just (TFunction t args') ->
     maybe t throwError (hasArgsError args' args)
   Just t -> t
-  Nothing -> throwError "call to unknown function"
+  Nothing -> throwError $ "call to unknown function " ++ id
   where
     hasArgsError [] [] = Nothing
     hasArgsError (e : excepteds) (a : actuals) =
@@ -73,8 +76,32 @@ typeofCaseOf expr cases env =
     condType = typeofExpr expr env -- Augmenter env de expr si PVar
     caseTypes = map f cases
     exprType = snd $ head caseTypes
-    f (PVar id, expr) = (condType, typeofExpr expr ((id, condType) : env))
-    f (pattern, expr) = (typeofPattern pattern env, typeofExpr expr env)
+    f (PVar id, body) = (condType, typeofExpr body ((id, condType) : env))
+    -- f (PTuple l r, body) = (condType, typeofExpr body env')
+    --   where
+    --     env' = case condType of
+    --       TTuple t1 t2 -> foldl g env [Arg (snd $ f $ l body) "", Arg (typeofArg t2) rId]
+    --         where
+    --           getArgs (p:ps) args = case
+    --       _ -> error ""
+    -- f (PVar id, body) = (condType, typeofExpr body ((id, condType) : env))
+    -- f (PTuple (PVar lId) (PVar rId), body) = (condType, typeofExpr body env')
+    --   where
+    --     env' = case condType of
+    --       TTuple t1 t2 -> foldl g env [Arg (typeofArg t1) lId, Arg (typeofArg t2) rId]
+    --       _ -> error ""
+    f (pattern, body) = (typeofPattern pattern env, typeofExpr body env)
+    g env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : g (g env t2) t1
+    g env (Arg t id) = (id, t) : env
+
+-- g (PTuple l r) (TTuple t1 t2) =
+
+{-
+    env' = foldl f env args
+    args' = map (\(Arg t id) -> t) args
+    f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1 -- TODO renommer f
+    f env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
+-}
 
 typeofUnary opType op expr env =
   let t = typeofExpr expr env
@@ -123,6 +150,8 @@ typeofPattern (PVar id) env = getType id env
 typeofPattern (PValue value) env = typeofValue value env
 typeofPattern (PTuple l r) env = TTuple (Arg (typeofPattern l env) "") (Arg (typeofPattern r env) "")
 typeofPattern PAny env = TAny
+
+typeofArg (Arg t id) = t
 
 throwError msg = error ("type error: " ++ msg ++ " ")
 

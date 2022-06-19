@@ -43,17 +43,13 @@ evalApp id exprs env = case getValue id env of
     _ -> evalExpr expr env'
     where
       env' = f env args exprs
-      f env ((Arg (TTuple aL aR) id) : args) (expr : exprs) =
-        case evalExpr expr env of 
-          VTuple l r -> (id, VTuple l r) : matchArg l aL : matchArg r aR : f env args exprs
-            where
-              v1 = evalExpr l env
-              v2 = evalExpr r env
+      f env ((Arg (TTuple t1 t2) id) : args) (expr : exprs) =
+        case evalExpr expr env of
+          VTuple v1 v2 -> (id, evalExpr expr env) : f (f env [t2] [v2]) [t1] [v1]
           _ -> throwError "function argument must be a tuple"
-      f env (arg : args) (expr : exprs) = matchArg expr arg : f env args exprs
+      f env ((Arg t id) : args) (expr : exprs) = (id, evalExpr expr env) : f env args exprs
       f env [] [] = env
       f env _ _ = throwError "wrong number of arguments"
-      matchArg expr (Arg t id) = (id, evalExpr expr env)
   val -> val
 
 evalUnary _ op expr env =
@@ -107,6 +103,9 @@ matchPattern pattern cond env = case pattern of
     Nothing -> False
     Just v -> True
   PValue val | areValueEqual val cond env -> True
+  PTuple l r -> case cond of
+    VTuple l1 r1 -> matchPattern l (evalExpr l1 env) env && matchPattern r (evalExpr r1 env) env
+    _ -> False
   PAny -> True
   _ -> False
 

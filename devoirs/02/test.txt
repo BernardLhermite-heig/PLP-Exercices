@@ -93,6 +93,11 @@ suppose (summon sum with 2 and 2) as strong as 6
     then we can conclude 5
     rather than 10; -- 10
 
+what is (5 and his friend 4) ? 
+    perhaps (5 and his friend 2) which does (5 and his friend 2) 
+    perhaps a which does a; -- (5 and his friend 4)
+    
+-- :t what is (5 and his friend 4) ? perhaps (5 and his friend 2) which does pasyep perhaps (a and his friend b) which does yep
 -- Tests de type
 -- :t this x is yep
 -- :t behold x with Integer y which does 3

@@ -24,7 +24,7 @@ addToEnv (Definition id args expr) env = retType' `seq` (id, TFunction retType' 
     retType = typeofExpr expr env'
     retType' = if retType == TAny then retType else retType
     augmentEnv env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : augmentEnv (augmentEnv env t2) t1
-    augmentEnv env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
+    augmentEnv env (Arg t id) = (id, t) : env
 
 addAllToEnv :: [Definition] -> TEnv -> TEnv
 addAllToEnv defs env = foldr addToEnv env defs

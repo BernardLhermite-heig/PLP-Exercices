@@ -111,7 +111,6 @@ Type
     | TypeTuple                                                     {$1}
 TypeTuple
     : '(' Type 'and his friend' Type ')'                            {TTuple (Arg $2 "") (Arg $4 "")}
-    -- TODO tuple de N (sucre syntaxique)
 
 FunctionApp
     : 'summon' 'identifier' 'with' FunctionAppArgs                  {EApp $2 $4}
@@ -139,7 +138,6 @@ Pattern
     | 'identifier'                                                  {PVar $1}
     | '(' Pattern 'and his friend' Pattern ')'                      {PTuple $2 $4}
     | Literal                                                       {PValue $1}
-    -- TODO ambigue Pattern tuple
 
 Literal
     : 'integer'                                                     {VInteger $1}

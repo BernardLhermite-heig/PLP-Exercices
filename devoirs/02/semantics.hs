@@ -19,12 +19,12 @@ addToEnv :: Definition -> TEnv -> TEnv
 addToEnv (Definition id [] expr) env = (id, typeofExpr expr env) : env -- Variables
 addToEnv (Definition id args expr) env = retType' `seq` (id, TFunction retType' args') : env -- Fonctions
   where
-    env' = foldl f env args
+    env' = foldl augmentEnv env args
     args' = map typeofArg args
     retType = typeofExpr expr env'
     retType' = if retType == TAny then retType else retType
-    f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1 -- TODO renommer f
-    f env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
+    augmentEnv env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : augmentEnv (augmentEnv env t2) t1
+    augmentEnv env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
 
 addAllToEnv :: [Definition] -> TEnv -> TEnv
 addAllToEnv defs env = foldr addToEnv env defs
@@ -77,31 +77,7 @@ typeofCaseOf expr cases env =
     caseTypes = map f cases
     exprType = snd $ head caseTypes
     f (PVar id, body) = (condType, typeofExpr body ((id, condType) : env))
-    -- f (PTuple l r, body) = (condType, typeofExpr body env')
-    --   where
-    --     env' = case condType of
-    --       TTuple t1 t2 -> foldl g env [Arg (snd $ f $ l body) "", Arg (typeofArg t2) rId]
-    --         where
-    --           getArgs (p:ps) args = case
-    --       _ -> error ""
-    -- f (PVar id, body) = (condType, typeofExpr body ((id, condType) : env))
-    -- f (PTuple (PVar lId) (PVar rId), body) = (condType, typeofExpr body env')
-    --   where
-    --     env' = case condType of
-    --       TTuple t1 t2 -> foldl g env [Arg (typeofArg t1) lId, Arg (typeofArg t2) rId]
-    --       _ -> error ""
     f (pattern, body) = (typeofPattern pattern env, typeofExpr body env)
-    g env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : g (g env t2) t1
-    g env (Arg t id) = (id, t) : env
-
--- g (PTuple l r) (TTuple t1 t2) =
-
-{-
-    env' = foldl f env args
-    args' = map (\(Arg t id) -> t) args
-    f env (Arg (TTuple t1 t2) id) = (id, TTuple t1 t2) : f (f env t2) t1 -- TODO renommer f
-    f env (Arg t id) = (id, t) : env -- TODO throw si argument dupliqué
--}
 
 typeofUnary opType op expr env =
   let t = typeofExpr expr env

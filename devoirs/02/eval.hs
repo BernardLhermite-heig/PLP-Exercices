@@ -49,7 +49,7 @@ evalApp id exprs env = case getValue id env of
     where
       env' = f env args exprs
       f env ((Arg (TTuple aL aR) id) : args) (expr : exprs) =
-        case evalExpr expr env of 
+        case evalExpr expr env of
           VTuple l r -> (id, VTuple l r) : matchArg l aL : matchArg r aR : f env args exprs
             where
               v1 = evalExpr l env
@@ -75,9 +75,9 @@ evalBinary opType op lhs rhs env =
   let v1 = evalExpr lhs env
       v2 = evalExpr rhs env
    in case op of
-        op | op `elem` ["+", "-", "*", "/"] -> case (v1, v2) of
+        op | op `elem` ["+", "-", "*", "/", "%"] -> case (v1, v2) of
           (VInteger i1, VInteger i2) ->
-            if op == "/" && i2 == 0
+            if op `elem` ["/", "%"] && i2 == 0
               then throwError "divison by zero"
               else VInteger (toArithm op i1 i2)
           _ -> throwError $ show op ++ " operator applied to non-integer"
@@ -146,6 +146,7 @@ toArithm "-" = (-)
 toArithm "+" = (+)
 toArithm "*" = (*)
 toArithm "/" = div
+toArithm "%" = mod
 toArithm op = throwError $ "unknown operator " ++ op
 
 throwError msg = error ("runtime error: " ++ msg ++ " ")

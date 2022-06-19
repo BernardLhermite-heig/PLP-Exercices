@@ -103,7 +103,7 @@ typeofBinary opType op lhs rhs env =
       t2 = typeofExpr rhs env
       throwError' = throwError $ show opType ++ " operator " ++ op ++ " cannot be applied to types " ++ show t1 ++ " and " ++ show t2
    in case opType of
-        Arithmetic | op `elem` ["+", "-", "*", "/"] ->
+        Arithmetic | op `elem` ["+", "-", "*", "/", "%"] ->
           case (t1, t2) of
             (TInteger, TInteger) -> TInteger
             _ -> throwError'

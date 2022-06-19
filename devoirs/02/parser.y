@@ -69,8 +69,21 @@ Expr
     : 'put that' LetInDefs 'into' Expr                              {ELet $2 $4}
     | 'put that' 'into' Expr                                        {ELet [] $3}
     | 'what is' Expr '?' CaseOfs                                    {ECaseOf $2 $4}
-    | UnaryOp Expr                                                  {EUnary $1 $2}
-    | Expr BinaryOp Expr                                            {EBinary $2 $1 $3}
+    | 'neg' Expr                                                    {EUnary (Operator Arithmetic "-") $2}
+    | 'not' Expr                                                    {EUnary (Operator Logical "!") $2}
+    | Expr 'times' Expr                                             {EBinary (Operator Arithmetic "*") $1 $3}
+    | Expr 'split' Expr                                             {EBinary (Operator Arithmetic "/") $1 $3}
+    | Expr 'rest' Expr                                              {EBinary (Operator Arithmetic "%") $1 $3}
+    | Expr 'plus' Expr                                              {EBinary (Operator Arithmetic "+") $1 $3}
+    | Expr 'minus' Expr                                             {EBinary (Operator Arithmetic "-") $1 $3}
+    | Expr 'weaker than' Expr                                       {EBinary (Operator Relational "<") $1 $3}
+    | Expr 'stronger than' Expr                                     {EBinary (Operator Relational ">") $1 $3}
+    | Expr 'as weak as' Expr                                        {EBinary (Operator Relational "<=") $1 $3}
+    | Expr 'as strong as' Expr                                      {EBinary (Operator Relational ">=") $1 $3}
+    | Expr 'same as' Expr                                           {EBinary (Operator Comparison "==") $1 $3}
+    | Expr 'different of' Expr                                      {EBinary (Operator Comparison "!=") $1 $3}
+    | Expr 'both' Expr                                              {EBinary (Operator Logical "&&") $1 $3}
+    | Expr 'either' Expr                                            {EBinary (Operator Logical "||") $1 $3}
     | Literal                                                       {EValue $1}
     | 'identifier'                                                  {EVar $1}
     | FunctionApp                                                   {$1}
@@ -133,25 +146,6 @@ Literal
     | 'yep'                                                         {VBool True}
     | 'pasyep'                                                      {VBool False}
     | '(' Expr 'and his friend' Expr ')'                            {VTuple $2 $4}
-
-UnaryOp
-    : 'neg'                                                         {Operator Arithmetic "-"}
-    | 'not'                                                         {Operator Logical "!"}
-
-BinaryOp
-    : 'plus'                                                        {Operator Arithmetic "+"}
-    | 'minus'                                                       {Operator Arithmetic "-"}
-    | 'times'                                                       {Operator Arithmetic "*"}
-    | 'split'                                                       {Operator Arithmetic "/"}
-    | 'rest'                                                        {Operator Arithmetic "%"}
-    | 'weaker than'                                                 {Operator Relational "<"}
-    | 'stronger than'                                               {Operator Relational ">"}
-    | 'as weak as'                                                  {Operator Relational "<="}
-    | 'as strong as'                                                {Operator Relational ">="}
-    | 'same as'                                                     {Operator Comparison "=="}
-    | 'different of'                                                {Operator Comparison "!="}
-    | 'both'                                                        {Operator Logical "&&"}
-    | 'either'                                                      {Operator Logical "||"}
 
 {
 parseError [] = error "Parse error at beginning or end of expression"

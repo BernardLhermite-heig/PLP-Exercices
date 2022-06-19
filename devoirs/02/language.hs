@@ -31,7 +31,6 @@ data Expr
   | EUnary Operator Expr
   | EBinary Operator Expr Expr
   | EIf Expr Expr Expr
-  deriving (Show)
 
 data Operator = Operator OperatorType String
   deriving (Show)
@@ -65,6 +64,10 @@ data Type
   | TFunction Type [Type]
   | TAny
   deriving (Eq)
+
+instance Show Expr where
+  show (EValue v) = show v
+  show _ = "pas nécessaire normalement"
 
 instance Show Value where
   show (VBool b) = show b
